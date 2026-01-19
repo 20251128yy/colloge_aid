@@ -1,0 +1,76 @@
+# src/main/resources/application.yml
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: campus-delivery
+
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://localhost:3306/campus_delivery?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+#  # Redis配置
+#  data:
+#    redis:
+#      host: localhost
+#      port: 6379
+#      password: ''
+#      database: 0
+#
+#  # 定时任务
+#  task:
+#    scheduling:
+#      enabled: true
+#      pool:
+#        size: 5
+
+  # 暂时禁用定时任务
+  task:
+    scheduling:
+      enabled: false
+
+# JWT配置
+jwt:
+  secret: campus_delivery_jwt_secret_key
+  expiration: 86400000
+
+# 区块链配置
+blockchain:
+  contract:
+    address: 0x1234567890123456789012345678901234567890
+    abi: []
+    bin: 0x
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.campus.delivery: DEBUG
