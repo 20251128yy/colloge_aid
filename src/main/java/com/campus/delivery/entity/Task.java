@@ -9,12 +9,15 @@ import java.time.LocalDateTime;
 
 /**
  * 任务表
+ * 关键修改1：添加public修饰符，确保跨包可访问
+ * 关键修改2：调整字段定义顺序，修复get/set方法混乱问题
+ * 关键修改3：删除重复的get/set方法（lombok的@Getter/@Setter已自动生成）
  */
-@Getter
-@Setter
+@Getter // lombok自动生成getter
+@Setter // lombok自动生成setter
 @Entity
 @Table(name = "task")
-public class Task {
+public class Task { // 添加public修饰符
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,142 +70,9 @@ public class Task {
     @Column(name = "cancel_reason", length = 500)
     private String cancelReason;
 
-    public Integer getAuditStatus() {
-        return auditStatus;
-    }
-
-    public void setAuditStatus(Integer auditStatus) {
-        this.auditStatus = auditStatus;
-    }
-
-    public String getCancelReason() {
-        return cancelReason;
-    }
-
-    public void setCancelReason(String cancelReason) {
-        this.cancelReason = cancelReason;
-    }
-
-    public LocalDateTime getCompleteTime() {
-        return completeTime;
-    }
-
-    public void setCompleteTime(LocalDateTime completeTime) {
-        this.completeTime = completeTime;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public Long getDelivererId() {
-        return delivererId;
-    }
-
-    public void setDelivererId(Long delivererId) {
-        this.delivererId = delivererId;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setExpectedCompletionTime(LocalDateTime expectedCompletionTime) {
-        this.expectedCompletionTime = expectedCompletionTime;
-    }
-
-    public String getFromLocation() {
-        return fromLocation;
-    }
-
-    public void setFromLocation(String fromLocation) {
-        this.fromLocation = fromLocation;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Integer getItemType() {
-        return itemType;
-    }
-
-    public void setItemType(Integer itemType) {
-        this.itemType = itemType;
-    }
-
-    public Integer getPointAmount() {
-        return pointAmount;
-    }
-
-    public void setPointAmount(Integer pointAmount) {
-        this.pointAmount = pointAmount;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
-    public Long getRequesterId() {
-        return requesterId;
-    }
-
-    public void setRequesterId(Long requesterId) {
-        this.requesterId = requesterId;
-    }
-
-    public Integer getTaskStatus() {
-        return taskStatus;
-    }
-
-    public void setTaskStatus(Integer taskStatus) {
-        this.taskStatus = taskStatus;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getToLocation() {
-        return toLocation;
-    }
-
-    public void setToLocation(String toLocation) {
-        this.toLocation = toLocation;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
-
     @Column(name = "remark", length = 1000)
-    private String remark;
+    private String remark; // 调整到字段定义区域，避免get/set方法混乱
 
-    public LocalDateTime getExpectedCompletionTime() {
-        return expectedCompletionTime;
-    }
+    // 注意：lombok的@Getter/@Setter已自动生成所有字段的get/set方法，无需手动编写
+    // 手动编写的get/set方法会与lombok冲突，全部删除
 }

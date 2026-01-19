@@ -67,6 +67,36 @@ public class PointTransaction {
     private String blockchainHash;
 
     /**
+     * 上链状态：0-未上链, 1-已上链, 2-上链失败
+     */
+    @Column(name = "chain_status", nullable = false)
+    private Integer chainStatus = 0;
+
+    /**
+     * 上链失败错误信息
+     */
+    @Column(name = "chain_error_msg", length = 255)
+    private String chainErrorMessage;
+
+    /**
+     * 上链重试次数（最多3次）
+     */
+    @Column(name = "upload_retry_count", nullable = false)
+    private Integer uploadRetryCount = 0;
+
+    /**
+     * 最后上链时间
+     */
+    @Column(name = "last_upload_time")
+    private LocalDateTime lastUploadTime;
+
+    /**
+     * 哈希值（用于验证数据一致性）
+     */
+    @Column(name = "hash_value", length = 64) // SHA-256 长度64
+    private String hashValue;
+
+    /**
      * 创建时间（自动填充，无需手动设置）
      */
     @CreationTimestamp

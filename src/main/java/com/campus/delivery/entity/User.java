@@ -4,19 +4,22 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import jakarta.persistence.*;
-
 
 import java.time.LocalDateTime;
 
 /**
  * 用户表
+ * 关键修改：
+ * 1. 删除所有手动get/set（@Data自动生成）
+ * 2. 移除重复的import导入
+ * 3. 简化@Id注解写法
  */
-@Data
+@Data // lombok自动生成get/set/toString/equals等，无需手动编写
 @Entity
 @Table(name = "user")
 public class User {
-    @jakarta.persistence.Id
+
+    @Id // 简化写法（已导入jakarta.persistence.*，无需加全路径）
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -61,115 +64,6 @@ public class User {
     @Column(name = "last_login_time")
     private LocalDateTime lastLoginTime;
 
-    public Integer getAuditStatus() {
-        return auditStatus;
-    }
-
-    public void setAuditStatus(Integer auditStatus) {
-        this.auditStatus = auditStatus;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public Integer getCurrentRole() {
-        return currentRole;
-    }
-
-    public void setCurrentRole(Integer currentRole) {
-        this.currentRole = currentRole;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Integer getFrozenPoints() {
-        return frozenPoints;
-    }
-
-    public void setFrozenPoints(Integer frozenPoints) {
-        this.frozenPoints = frozenPoints;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Integer getIdentityType() {
-        return identityType;
-    }
-
-    public void setIdentityType(Integer identityType) {
-        this.identityType = identityType;
-    }
-
-    public LocalDateTime getLastLoginTime() {
-        return lastLoginTime;
-    }
-
-    public void setLastLoginTime(LocalDateTime lastLoginTime) {
-        this.lastLoginTime = lastLoginTime;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public Integer getPointBalance() {
-        return pointBalance;
-    }
-
-    public void setPointBalance(Integer pointBalance) {
-        this.pointBalance = pointBalance;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public String getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(String studentId) {
-        this.studentId = studentId;
-    }
+    // 注意：删除所有手动编写的get/set方法！
+    // @Data注解会自动生成，手动编写会导致编译冲突
 }

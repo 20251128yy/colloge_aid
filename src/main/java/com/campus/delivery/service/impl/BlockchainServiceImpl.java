@@ -1,71 +1,77 @@
-//package com.campus.delivery.service.impl;
-//
-//import com.campus.delivery.service.BlockchainService;
+package com.campus.delivery.service.impl;
+
+import com.campus.delivery.entity.PointTransaction;
+import com.campus.delivery.repository.PointTransactionRepository;
+import com.campus.delivery.service.BlockchainService;
 //import jakarta.annotation.PostConstruct;
 //import org.fisco.bcos.sdk.BcosSDK;
 //import org.fisco.bcos.sdk.client.Client;
 //import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+//import org.fisco.bcos.sdk.transaction.Contract;
+//import org.fisco.bcos.sdk.transaction.manager.TransactionManager;
+//import org.fisco.bcos.sdk.transaction.processor.TransactionProcessorFactory;
 //import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
 //import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
-//// 补全Contract的正确导入
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.stereotype.Service;
-//import com.campus.delivery.service.BlockchainService;
-//import jakarta.annotation.PostConstruct;
-//import org.fisco.bcos.sdk.BcosSDK;
-//import org.fisco.bcos.sdk.client.Client;
-//import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-//import org.fisco.bcos.sdk.transaction.Contract; // 正确的Contract导入
-//import org.fisco.bcos.sdk.transaction.manager.TransactionManager; // 正确的TransactionManager导入
-//import org.fisco.bcos.sdk.transaction.processor.TransactionProcessorFactory; // 正确的工厂类导入
-//import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
-//import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.stereotype.Service;
-//
-//import java.math.BigInteger;
-//import java.util.List;
-//import java.util.stream.Collectors;
-//
-//// 补全@PostConstruct的导入
-//import java.math.BigInteger;
-//import java.util.List;
-//import java.util.stream.Collectors; // 补全类型转换所需的工具类
-//
-//
-//@Service
-//public class BlockchainServiceImpl implements BlockchainService {
-//    // 智能合约地址A
-//    @Value("${blockchain.contract.address}")
-//    private String contractAddress;
-//
-//    // 智能合约ABI（建议配置文件中存放JSON格式的ABI字符串）
-//    @Value("${blockchain.contract.abi}")
-//    private String contractAbi;
-//
-//    // 智能合约二进制（部署时用，调用时可选）
-//    @Value("${blockchain.contract.bin:#{null}}")
-//    private String contractBin;
-//
-//    // FISCO BCOS SDK配置文件路径（建议配置在application.yml中）
-//    @Value("${blockchain.sdk.config.path:classpath:fisco-sdk/config.toml}")
-//    private String sdkConfigPath;
-//
-//    // 群组ID（默认群组1）
-//    @Value("${blockchain.group.id:1}")
-//    private Integer groupId;
-//
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+public class BlockchainServiceImpl implements BlockchainService {
+    // 智能合约地址A
+    @Value("${blockchain.contract.address}")
+    private String contractAddress;
+
+    // 智能合约ABI（建议配置文件中存放JSON格式的ABI字符串）
+    @Value("${blockchain.contract.abi}")
+    private String contractAbi;
+
+    // 智能合约二进制（部署时用，调用时可选）
+    @Value("${blockchain.contract.bin:#{null}}")
+    private String contractBin;
+
+    // FISCO BCOS SDK配置文件路径（建议配置在application.yml中）
+    @Value("${blockchain.sdk.config.path:classpath:fisco-sdk/config.toml}")
+    private String sdkConfigPath;
+
+    // 群组ID（默认群组1）
+    @Value("${blockchain.group.id:1}")
+    private Integer groupId;
+
 //    // FISCO BCOS核心实例（全局初始化一次，避免重复创建）
 //    private BcosSDK bcosSDK;
 //    private Client client;
 //    private CryptoKeyPair cryptoKeyPair;
 //    private TransactionManager transactionManager;
-//
-//    /**
-//     * 【关键优化】使用@PostConstruct注解，服务启动时初始化一次区块链连接
-//     * 避免每次调用方法都重复初始化，提升性能
-//     */
-//
+
+    @Autowired
+    private PointTransactionRepository pointTransactionRepository;
+
+    @Override
+    public String transferPoints(Long taskId, Long requesterId, Long delivererId, Integer amount) {
+        return "";
+    }
+
+    @Override
+    public String getHistoryByTaskId(Long taskId) {
+        return "";
+    }
+
+    @Override
+    public String getAllHistory() {
+        return "";
+    }
+
+    /**
+     * 【关键优化】使用@PostConstruct注解，服务启动时初始化一次区块链连接
+     * 避免每次调用方法都重复初始化，提升性能
+     */
+
 //    @PostConstruct
 //    private void initBlockchain() {
 //        try {
@@ -95,7 +101,7 @@
 //            throw new RuntimeException("初始化区块链连接失败，请检查SDK配置和网络连接", e);
 //        }
 //    }
-//
+
 //    @Override
 //    public String transferPoints(Long taskId, Long requesterId, Long delivererId, Integer amount) {
 //        try {
@@ -174,7 +180,7 @@
 //            throw new RuntimeException("查询智能合约失败: " + e.getMessage(), e);
 //        }
 //    }
-//
+
 //    @Override
 //    public String getAllHistory() {
 //        try {
@@ -210,15 +216,57 @@
 //            throw new RuntimeException("查询智能合约失败: " + e.getMessage(), e);
 //        }
 //    }
+
+    /**
+     * 实现积分上链功能，支持重试机制
+     * @param transactionId 积分交易ID
+     */
+//    @Override
+//    public boolean uploadPointTransaction(Long transactionId) {
+//        // 获取积分交易记录
+//        PointTransaction transaction = pointTransactionRepository.findById(transactionId)
+//                .orElseThrow(() -> new RuntimeException("积分交易记录不存在：" + transactionId));
 //
-//    /**
-//     * 校验区块链连接是否初始化完成
-//     */
+//        // 如果已经上链成功或者重试次数超过3次，则不再重试
+//        if (transaction.getChain_status() == 1 || transaction.getUpload_retry_count() >= 3) {
+//            return transaction.getChain_status() == 1;
+//        }
 //
+//        // 增加重试次数
+//        transaction.setUpload_retry_count(transaction.getUpload_retry_count() + 1);
+//        transaction.setLast_upload_time(new Date());
+//
+//        try {
+//            // 调用区块链服务上链
+//            String transactionHash = transferPoints(
+//                    transactionId,
+//                    transaction.getFrom_user_id(),
+//                    transaction.getTo_user_id(),
+//                    transaction.getAmount()
+//            );
+//
+//            // 上链成功，更新状态
+//            transaction.setChain_status(1); // 已上链
+//            transaction.setHash_value(transactionHash);
+//            transaction.setChain_error_msg(null);
+//            pointTransactionRepository.save(transaction);
+//            return true;
+//        } catch (Exception e) {
+//            // 上链失败，更新状态和失败原因
+//            transaction.setChain_status(2); // 上链失败
+//            transaction.setChain_error_msg(e.getMessage());
+//            pointTransactionRepository.save(transaction);
+//            return false;
+//        }
+//    }
+
+    /**
+     * 校验区块链连接是否初始化完成
+     */
+
 //    private void checkBlockchainInit() {
 //        if (transactionManager == null || client == null) {
 //            throw new RuntimeException("区块链连接未初始化，请检查SDK配置或网络连接");
 //        }
 //    }
-//}
-//
+}
