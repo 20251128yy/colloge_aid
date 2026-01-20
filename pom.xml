@@ -146,7 +146,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.campus.delivery.DeliveryApplication</mainClass>
+                    <mainClass>com.campus.delivery.CollogeAidApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>

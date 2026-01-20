@@ -27,4 +27,11 @@ public interface BlockchainService { // 显式添加public（接口默认public�
      * @return 所有积分流转记录（JSON格式/字符串）
      */
     String getAllHistory();
+
+    /**
+     * 实现积分上链功能，支持重试机制
+     * @param transactionId 积分交易ID
+     * @return 上链是否成功
+     */
+    boolean uploadPointTransaction(Long transactionId);
 }

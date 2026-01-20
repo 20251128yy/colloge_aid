@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,6 +64,52 @@ public class AdminController {
     }
 
     /**
+     * 获取用户列表
+     */
+    @GetMapping("/users")
+    public Result<Map<String, Object>> getUserList(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer auditStatus,
+            @RequestParam(required = false) Integer role,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            HttpServletRequest request) {
+        try {
+            // 权限检查：只有管理员才能访问此接口
+            checkAdminPermission(request);
+
+            // TODO: 实现分页查询用户列表的功能
+            Map<String, Object> result = new HashMap<>();
+            // 模拟数据
+            result.put("total", 100);
+            result.put("items", null);
+            return Result.success(result);
+        } catch (PermissionDeniedException e) {
+            return Result.forbidden(e.getMessage());
+        } catch (Exception e) {
+            return Result.badRequest(e.getMessage());
+        }
+    }
+
+    /**
+     * 获取用户详情
+     */
+    @GetMapping("/users/{userId}")
+    public Result<User> getUserDetail(@PathVariable Long userId, HttpServletRequest request) {
+        try {
+            // 权限检查：只有管理员才能访问此接口
+            checkAdminPermission(request);
+
+            User user = userService.getUserById(userId).orElse(null);
+            return Result.success(user);
+        } catch (PermissionDeniedException e) {
+            return Result.forbidden(e.getMessage());
+        } catch (Exception e) {
+            return Result.badRequest(e.getMessage());
+        }
+    }
+
+    /**
      * 获取平台统计数据
      */
     @GetMapping("/statistics")
@@ -73,18 +120,6 @@ public class AdminController {
 
             // TODO: 实现数据统计功能
             Map<String, Object> statistics = new HashMap<>();
-            // 统计平台总用户数
-            // statistics.put("totalUser", userService.countTotalUsers());
-            // 统计任务总数
-            // statistics.put("totalTask", taskService.countTotalTasks());
-            // 统计各状态任务数
-            // statistics.put("pendingTasks", taskService.countTasksByStatus(0));
-            // statistics.put("deliveringTasks", taskService.countTasksByStatus(1));
-            // statistics.put("completedTasks", taskService.countTasksByStatus(2));
-            // statistics.put("cancelledTasks", taskService.countTasksByStatus(3));
-            // 统计积分排行
-            // statistics.put("pointRanking", userService.getPointRanking());
-            
             // 模拟数据
             statistics.put("totalUser", 100);
             statistics.put("totalTask", 50);

@@ -1,0 +1,76 @@
+<view class="container">
+  <!-- 用户信息区域 -->
+  <view class="user-info-section">
+    <view class="user-avatar">
+      <image src="{{userInfo.avatar || '?prompt=user%20avatar%20with%20modern%20design&image_size=square'}}" mode="aspectFit"></image>
+    </view>
+    <view class="user-details">
+      <text class="user-name">{{userInfo.nickName || '用户'}}</text>
+      <text class="user-role">{{currentRole === 0 ? '需求方' : '派送方'}}</text>
+    </view>
+    <view class="role-switch">
+      <button 
+        class="switch-btn" 
+        bindtap="onSwitchRole"
+      >
+        切换角色
+      </button>
+    </view>
+  </view>
+
+  <!-- 积分信息区域 -->
+  <view class="points-section">
+    <view class="points-header">
+      <text class="points-title">我的积分</text>
+      <text class="points-balance">{{pointsInfo.availablePoints || 0}}</text>
+    </view>
+    <view class="points-detail">
+      <view class="detail-item">
+        <text class="detail-label">可用积分</text>
+        <text class="detail-value">{{pointsInfo.availablePoints || 0}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">冻结积分</text>
+        <text class="detail-value">{{pointsInfo.frozenPoints || 0}}</text>
+      </view>
+      <view class="detail-item">
+        <text class="detail-label">总积分</text>
+        <text class="detail-value">{{(pointsInfo.availablePoints || 0) + (pointsInfo.frozenPoints || 0)}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-item" bindtap="onViewMyTasks">
+      <text class="menu-icon">📋</text>
+      <text class="menu-text">我的发布</text>
+      <text class="menu-arrow">＞</text>
+    </view>
+    <view class="menu-item" bindtap="onViewAcceptedTasks">
+      <text class="menu-icon">🚚</text>
+      <text class="menu-text">我的接单</text>
+      <text class="menu-arrow">＞</text>
+    </view>
+    <view class="menu-item" bindtap="onViewPointRecords">
+      <text class="menu-icon">💰</text>
+      <text class="menu-text">积分记录</text>
+      <text class="menu-arrow">＞</text>
+    </view>
+    <view class="menu-item" bindtap="onViewBlockchain">
+      <text class="menu-icon">⛓️</text>
+      <text class="menu-text">区块链记录</text>
+      <text class="menu-arrow">＞</text>
+    </view>
+  </view>
+
+  <!-- 设置和退出 -->
+  <view class="settings-section">
+    <view class="menu-item" bindtap="onSettings">
+      <text class="menu-icon">⚙️</text>
+      <text class="menu-text">设置</text>
+      <text class="menu-arrow">＞</text>
+    </view>
+    <button class="logout-btn" bindtap="onLogout">退出登录</button>
+  </view>
+</view>

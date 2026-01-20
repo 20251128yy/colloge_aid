@@ -1,0 +1,90 @@
+<view class="container">
+  <!-- 任务基本信息 -->
+  <view class="task-info-section">
+    <view class="task-header">
+      <text class="task-title">{{taskInfo.taskTitle}}</text>
+      <view class="task-status" wx:if="{{taskInfo.taskStatus === 0}}">
+        <text class="status-text">待接单</text>
+      </view>
+      <view class="task-status processing" wx:elif="{{taskInfo.taskStatus === 1}}">
+        <text class="status-text">配送中</text>
+      </view>
+      <view class="task-status completed" wx:elif="{{taskInfo.taskStatus === 2}}">
+        <text class="status-text">已完成</text>
+      </view>
+      <view class="task-status issued" wx:elif="{{taskInfo.taskStatus === 3}}">
+        <text class="status-text">积分已发放</text>
+      </view>
+      <view class="task-status cancelled" wx:elif="{{taskInfo.taskStatus === 4}}">
+        <text class="status-text">已取消</text>
+      </view>
+    </view>
+
+    <view class="task-details">
+      <text class="detail-label">任务描述：</text>
+      <text class="detail-content">{{taskInfo.taskDescription}}</text>
+    </view>
+
+    <view class="task-meta">
+      <view class="meta-item">
+        <text class="meta-label">积分奖励：</text>
+        <text class="meta-value points">{{taskInfo.pointAmount}}</text>
+      </view>
+      <view class="meta-item">
+        <text class="meta-label">截止时间：</text>
+        <text class="meta-value">{{taskInfo.expectedCompletionTime}}</text>
+      </view>
+      <view class="meta-item">
+        <text class="meta-label">发布时间：</text>
+        <text class="meta-value">{{taskInfo.createdTime}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 任务操作按钮 -->
+  <view class="action-buttons">
+    <!-- 待接单状态下，派送方可以接单 -->
+    <button 
+      class="btn btn-primary" 
+      wx:if="{{taskInfo.taskStatus === 0 && isDeliverer}}"
+      bindtap="onAcceptTask"
+    >
+      接单
+    </button>
+
+    <!-- 配送中状态下，派送方可以完成任务 -->
+    <button 
+      class="btn btn-success" 
+      wx:if="{{taskInfo.taskStatus === 1 && isDeliverer && taskInfo.delivererId === currentUserId}}"
+      bindtap="onCompleteTask"
+    >
+      完成任务
+    </button>
+
+    <!-- 待接单或配送中状态下，需求方可以取消任务 -->
+    <button 
+      class="btn btn-danger" 
+      wx:if="{{(taskInfo.taskStatus === 0 || taskInfo.taskStatus === 1) && !isDeliverer && taskInfo.requesterId === currentUserId}}"
+      bindtap="onCancelTask"
+    >
+      取消任务
+    </button>
+
+    <!-- 已完成状态下，需求方可以确认完成 -->
+    <button 
+      class="btn btn-primary" 
+      wx:if="{{taskInfo.taskStatus === 2 && !isDeliverer && taskInfo.requesterId === currentUserId}}"
+      bindtap="onConfirmTask"
+    >
+      确认完成并发放积分
+    </button>
+  </view>
+
+  <!-- 区块链积分流转记录 -->
+  <view class="blockchain-section" wx:if="{{blockchainHistory}}">
+    <text class="section-title">区块链积分流转记录</text>
+    <view class="blockchain-info">
+      <text class="info-text">{{blockchainHistory}}</text>
+    </view>
+  </view>
+</view>

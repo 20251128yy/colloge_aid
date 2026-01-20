@@ -1,0 +1,181 @@
+.container {
+  padding: 20rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 任务基本信息 */
+.task-info-section {
+  background-color: #fff;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20rpx;
+}
+
+.task-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.task-status {
+  padding: 5rpx 15rpx;
+  border-radius: 15rpx;
+  background-color: #e0e0e0;
+  align-self: flex-start;
+}
+
+.task-status.processing {
+  background-color: #ffeb3b;
+}
+
+.task-status.completed {
+  background-color: #4caf50;
+}
+
+.task-status.issued {
+  background-color: #2196f3;
+}
+
+.task-status.cancelled {
+  background-color: #f44336;
+}
+
+.status-text {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.task-status.processing .status-text {
+  color: #f57c00;
+}
+
+.task-status.completed .status-text,
+.task-status.issued .status-text,
+.task-status.cancelled .status-text {
+  color: #fff;
+}
+
+.task-details {
+  margin-bottom: 30rpx;
+}
+
+.detail-label {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 10rpx;
+}
+
+.detail-content {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.task-meta {
+  border-top: 2rpx solid #f0f0f0;
+  padding-top: 20rpx;
+}
+
+.meta-item {
+  display: flex;
+  margin-bottom: 15rpx;
+  align-items: center;
+}
+
+.meta-label {
+  font-size: 26rpx;
+  color: #999;
+  width: 150rpx;
+}
+
+.meta-value {
+  font-size: 26rpx;
+  color: #333;
+  flex: 1;
+}
+
+.meta-value.points {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ff6b35;
+}
+
+/* 操作按钮 */
+.action-buttons {
+  padding: 20rpx;
+  background-color: #fff;
+  border-radius: 10rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+  width: 100%;
+  height: 80rpx;
+  border-radius: 10rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 20rpx;
+}
+
+.btn:last-child {
+  margin-bottom: 0;
+}
+
+.btn-primary {
+  background-color: #07c160;
+  color: #fff;
+}
+
+.btn-success {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.btn-danger {
+  background-color: #f44336;
+  color: #fff;
+}
+
+/* 区块链积分流转记录 */
+.blockchain-section {
+  background-color: #fff;
+  border-radius: 10rpx;
+  padding: 20rpx;
+  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  display: block;
+  margin-bottom: 20rpx;
+}
+
+.blockchain-info {
+  background-color: #f8f8f8;
+  padding: 20rpx;
+  border-radius: 8rpx;
+  font-family: monospace;
+}
+
+.info-text {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.6;
+}

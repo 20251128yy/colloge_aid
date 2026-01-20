@@ -135,4 +135,14 @@ public class UserServiceImpl implements UserService {
         user.setPointBalance(user.getPointBalance() + amount);
         return userRepository.save(user);
     }
+
+    @Override
+    public User updateUser(User user) {
+        return null;
+    }
+
+    @Override
+    public boolean changePassword(Long userId, String oldPassword, String newPassword) {
+        return false;
+    }
 }

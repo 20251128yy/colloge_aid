@@ -97,4 +97,65 @@ public class UserController {
             return Result.badRequest(e.getMessage());
         }
     }
+
+    /**
+     * 获取用户积分
+     */
+    @GetMapping("/points")
+    public Result<Integer> getPointBalance(HttpServletRequest request) {
+        try {
+            // 从JWT令牌中获取用户ID
+            String token = request.getHeader("Authorization").substring(7);
+            Long userId = JwtUtil.getUserIdFromToken(token);
+
+            Optional<User> userOptional = userService.getUserById(userId);
+            if (userOptional.isPresent()) {
+                return Result.success(userOptional.get().getPointBalance());
+            } else {
+                return Result.error(404, "用户不存在");
+            }
+        } catch (Exception e) {
+            return Result.badRequest(e.getMessage());
+        }
+    }
+
+    /**
+     * 更新用户信息
+     */
+    @PutMapping("/profile")
+    public Result<UserVO> updateUserInfo(@RequestBody User user, HttpServletRequest request) {
+        try {
+            // 从JWT令牌中获取用户ID
+            String token = request.getHeader("Authorization").substring(7);
+            Long userId = JwtUtil.getUserIdFromToken(token);
+
+            user.setId(userId);
+            User updatedUser = userService.updateUser(user);
+            UserVO userVO = new UserVO();
+            BeanUtils.copyProperties(updatedUser, userVO);
+            return Result.success(userVO);
+        } catch (Exception e) {
+            return Result.badRequest(e.getMessage());
+        }
+    }
+
+    /**
+     * 修改密码
+     */
+    @PutMapping("/password")
+    public Result<Boolean> changePassword(
+            @RequestParam String oldPassword,
+            @RequestParam String newPassword,
+            HttpServletRequest request) {
+        try {
+            // 从JWT令牌中获取用户ID
+            String token = request.getHeader("Authorization").substring(7);
+            Long userId = JwtUtil.getUserIdFromToken(token);
+
+            boolean result = userService.changePassword(userId, oldPassword, newPassword);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.badRequest(e.getMessage());
+        }
+    }
 }

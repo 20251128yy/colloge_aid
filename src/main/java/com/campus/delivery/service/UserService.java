@@ -52,4 +52,8 @@ public interface UserService {
      * 解冻用户积分
      */
     User unfreezePoints(Long userId, Integer amount);
+
+    User updateUser(User user);
+
+    boolean changePassword(Long userId, String oldPassword, String newPassword);
 }

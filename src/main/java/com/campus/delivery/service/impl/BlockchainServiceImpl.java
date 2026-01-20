@@ -67,6 +67,11 @@ public class BlockchainServiceImpl implements BlockchainService {
         return "";
     }
 
+    @Override
+    public boolean uploadPointTransaction(Long transactionId) {
+        return false;
+    }
+
     /**
      * 【关键优化】使用@PostConstruct注解，服务启动时初始化一次区块链连接
      * 避免每次调用方法都重复初始化，提升性能
