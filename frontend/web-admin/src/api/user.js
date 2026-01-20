@@ -1,58 +1,53 @@
-// Web管理端用户API模块
+import request from '../utils/request'
 
-import { get, post, put, del } from '../utils/request';
+// 获取用户列表（适配后端参数）
+export const getUsers = (params) => {
+  return request.get('/admin/users', { params })
+}
 
-/**
- * 获取用户列表
- * @param {Object} params - 查询参数
- * @param {string} [params.keyword] - 关键词（手机号、邮箱、姓名）
- * @param {number} [params.auditStatus] - 审核状态
- * @param {number} [params.role] - 角色
- * @param {number} [params.page] - 页码
- * @param {number} [params.size] - 每页数量
- * @returns {Promise<Object>} - 用户列表
- */
-export const getUserList = (params = {}) => {
-  return get('/admin/users', params);
-};
+// 获取用户详情
+export const getUserById = (id) => {
+  return request.get(`/admin/users/${id}`)
+}
 
-/**
- * 用户审核
- * @param {number} userId - 用户ID
- * @param {number} auditStatus - 审核状态，0=待审核，1=审核通过，2=审核拒绝
- * @param {string} reason - 审核理由
- * @returns {Promise<boolean>} - 审核结果
- */
-export const auditUser = (userId, auditStatus, reason) => {
-  return post('/admin/user/audit', { userId, auditStatus, reason });
-};
+// 更新用户审核状态（修正参数传递方式）
+export const updateUserAuditStatus = (id, status) => {
+  return request.put(`/admin/users/${id}/audit`, {}, {
+    params: { auditStatus: status } // 后端@RequestParam需要放在params里
+  })
+}
 
-/**
- * 获取用户详情
- * @param {number} userId - 用户ID
- * @returns {Promise<Object>} - 用户详情
- */
-export const getUserDetail = (userId) => {
-  return get(`/admin/users/${userId}`);
-};
+// 更新用户角色（修正参数传递）
+export const updateUserRole = (id, role) => {
+  return request.put(`/admin/users/${id}/role`, {}, {
+    params: { role: role }
+  })
+}
 
-/**
- * 禁用/启用用户
- * @param {number} userId - 用户ID
- * @param {boolean} disabled - 是否禁用
- * @returns {Promise<boolean>} - 操作结果
- */
-export const toggleUserStatus = (userId, disabled) => {
-  return put(`/admin/users/${userId}/status`, { disabled });
-};
+// 更新用户状态（修正参数传递）
+export const updateUserStatus = (id, status) => {
+  return request.put(`/admin/users/${id}/status`, {}, {
+    params: { status: status }
+  })
+}
 
-/**
- * 调整用户积分
- * @param {number} userId - 用户ID
- * @param {number} amount - 调整的积分数量，正数为增加，负数为减少
- * @param {string} reason - 调整理由
- * @returns {Promise<boolean>} - 操作结果
- */
-export const adjustUserPoints = (userId, amount, reason) => {
-  return put(`/admin/users/${userId}/points`, { amount, reason });
-};
+// 获取用户积分记录
+export const getUserPointsHistory = (id, params) => {
+  return request.get(`/admin/users/${id}/points`, { params })
+}
+
+// 管理员登录（适配后端/user/login，统一登录入口）
+export const adminLogin = (data) => {
+  // 复用用户登录接口，后端会验证是否为管理员
+  return request.post('/user/login', data).then(res => {
+    // 登录成功后验证是否为管理员（前端二次校验）
+    if (res.code === 200) {
+      // 解析Token中的identityType（需在JwtUtil前端实现解析）
+      // const identityType = JwtUtil.getIdentityTypeFromToken(res.data);
+      // if (identityType !== 2) {
+      //   return Promise.reject({ msg: '非管理员账号，无法登录管理后台' });
+      // }
+    }
+    return res;
+  })
+}

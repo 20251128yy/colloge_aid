@@ -4,10 +4,11 @@ import { login, register } from '../../api/user';
 Page({
   data: {
     account: '', // 手机号或邮箱
-    password: ''
+    password: '',
+    name: '', // 姓名
+    studentId: '' // 学号
   },
 
-  // 输入框内容变化处理
   onInputChange(e) {
     const { type } = e.currentTarget.dataset;
     this.setData({
@@ -15,77 +16,95 @@ Page({
     });
   },
 
-  // 登录
+  // 登录（适配code/msg格式）
   async onLogin() {
     const { account, password } = this.data;
 
     try {
-      wx.showLoading({ title: '登录中...' });
+      wx.showLoading({ title: '登录中...', mask: true });
 
-      // 调用登录API
       const res = await login({ account, password });
 
-      if (res.success) {
-        // 保存登录状态到本地存储
+      // 适配后端 code=200 为成功
+      if (res.code === 200) {
         wx.setStorageSync('token', res.data);
         wx.setStorageSync('isLoggedIn', true);
+        wx.showToast({ title: '登录成功', icon: 'success' });
 
-        wx.showToast({ title: '登录成功' });
-
-        // 跳转到首页
         setTimeout(() => {
           wx.switchTab({ url: '/pages/index/index' });
         }, 1500);
-      } else {
-        wx.showToast({ title: res.message, icon: 'none' });
       }
+
     } catch (error) {
       console.error('登录失败:', error);
-      wx.showToast({ title: '登录失败，请重试', icon: 'none' });
+      wx.showToast({ 
+        title: error.msg || '登录失败，请重试', 
+        icon: 'none',
+        duration: 2000
+      });
     } finally {
       wx.hideLoading();
     }
   },
 
-  // 注册
+  // 注册（彻底解决配对警告+精准提示）
   async onRegister() {
-    const { account, password } = this.data;
+    const { account, password, name, studentId } = this.data;
 
-    // 简单验证输入格式
-    if (!this.validateInput(account, password)) {
+    // 前置关闭残留loading，避免重复
+    wx.hideLoading();
+
+    if (!this.validateInput(account, password, name, studentId)) {
       return;
     }
 
     try {
-      wx.showLoading({ title: '注册中...' });
+      wx.showLoading({ title: '注册中...', mask: true });
 
-      // 调用注册API
-      const res = await register({ 
-        phone: this.isPhone(account) ? account : '',
-        email: this.isEmail(account) ? account : '',
+      // 构造参数：确保非手机号/邮箱时传 null 而非空字符串（避免后端校验空字符串）
+      const registerParams = { 
+        phone: this.isPhone(account) ? account : null,
+        email: this.isEmail(account) ? account : null,
         password: password,
-        nickName: '新用户', // 默认昵称
-        role: 0 // 默认角色：需求方
-      });
+        name: name,
+        studentId: studentId
+      };
 
-      if (res.success) {
-        wx.showToast({ title: '注册成功' });
-        wx.showToast({ title: '请登录', icon: 'none' });
-      } else {
-        wx.showToast({ title: res.message, icon: 'none' });
-      }
+      const res = await register(registerParams);
+
+      // 只有code=200才会走到这里
+      wx.showToast({ title: '注册成功，请登录', icon: 'success', duration: 2000 });
+      this.setData({ account: '', password: '', name: '', studentId: '' });
+
     } catch (error) {
       console.error('注册失败:', error);
-      wx.showToast({ title: '注册失败，请重试', icon: 'none' });
+      // 显示后端精准提示（手机号/邮箱/学号重复）
+      wx.showToast({ 
+        title: error.msg || '注册失败，请重试', 
+        icon: 'none',
+        duration: 2000
+      });
     } finally {
+      // 确保loading必关闭（核心解决配对警告）
       wx.hideLoading();
     }
   },
 
-  // 验证输入格式
-  validateInput(account, password) {
+  // 验证输入格式（不变）
+  validateInput(account, password, name, studentId) {
     if (!account) {
       wx.showToast({ title: '请输入手机号或邮箱', icon: 'none' });
+      return false;
+    }
+
+    if (!name) {
+      wx.showToast({ title: '请输入姓名', icon: 'none' });
+      return false;
+    }
+
+    if (!studentId) {
+      wx.showToast({ title: '请输入学号', icon: 'none' });
       return false;
     }
 
@@ -112,12 +131,10 @@ Page({
     return true;
   },
 
-  // 判断是否为手机号
   isPhone(str) {
     return /^1[3-9]\d{9}$/.test(str);
   },
 
-  // 判断是否为邮箱
   isEmail(str) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
   }

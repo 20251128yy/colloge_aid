@@ -52,3 +52,5 @@ blockchain:
       path: "classpath:fisco-sdk/config.toml"  # SDK配置文件路径
   group:
     id: 1  # 群组ID
+
+# application.yml

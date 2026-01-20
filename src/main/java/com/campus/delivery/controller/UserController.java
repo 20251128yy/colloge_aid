@@ -21,23 +21,24 @@ import java.util.Optional;
  * 用户控制器
  */
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/user")
 public class UserController {
     @Autowired
     private UserService userService;
 
-    /**
-     * 用户注册
-     */
     @PostMapping("/register")
     public Result<UserVO> register(@Validated @RequestBody UserRegisterDTO userRegisterDTO) {
         try {
             User user = userService.register(userRegisterDTO);
             UserVO userVO = new UserVO();
             BeanUtils.copyProperties(user, userVO);
-            return Result.success(userVO);
+            return Result.success(userVO); // 成功返回 code=200, msg=成功
+        } catch (BusinessException e) {
+            // 业务异常返回 code=400 + 具体提示
+            return Result.error(400, e.getMessage());
         } catch (Exception e) {
-            return Result.badRequest(e.getMessage());
+            // 其他异常返回通用提示
+            return Result.error(500, "服务器内部错误");
         }
     }
 
@@ -49,10 +50,10 @@ public class UserController {
         try {
             String token = userService.login(userLoginDTO);
             return Result.success(token);
-        } catch (UserNotAuditedException e) {
-            return Result.error(403, e.getMessage());
+        } catch (BusinessException e) {
+            return Result.error(400, e.getMessage());
         } catch (Exception e) {
-            return Result.badRequest(e.getMessage());
+            return Result.error(500, "服务器内部错误");
         }
     }
 

@@ -1,6 +1,6 @@
 <view class="container">
   <view class="logo">
-    <image src="?prompt=campus%20mutual%20aid%20logo%20with%20modern%20design&image_size=square" mode="aspectFit"></image>
+    <image src="/images/home.png" mode="aspectFit"></image>
     <text class="title">校园互助平台</text>
   </view>
 
@@ -12,6 +12,26 @@
         bindinput="onInputChange"
         data-type="account"
         value="{{account}}"
+      />
+    </view>
+
+    <view class="form-group">
+      <input 
+        class="input" 
+        placeholder="请输入姓名" 
+        bindinput="onInputChange"
+        data-type="name"
+        value="{{name}}"
+      />
+    </view>
+
+    <view class="form-group">
+      <input 
+        class="input" 
+        placeholder="请输入学号" 
+        bindinput="onInputChange"
+        data-type="studentId"
+        value="{{studentId}}"
       />
     </view>
 
