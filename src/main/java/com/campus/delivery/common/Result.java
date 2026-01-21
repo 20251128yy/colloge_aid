@@ -2,6 +2,8 @@ package com.campus.delivery.common;
 
 import lombok.Data;
 
+import java.util.Map;
+
 /**
  * 统一返回结果类
  */
@@ -67,4 +69,5 @@ public class Result<T> {
     public static <T> Result<T> serverError(String msg) {
         return error(500, msg);
     }
+
 }

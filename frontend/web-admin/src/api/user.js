@@ -36,18 +36,58 @@ export const getUserPointsHistory = (id, params) => {
   return request.get(`/admin/users/${id}/points`, { params })
 }
 
-// 管理员登录（适配后端/user/login，统一登录入口）
+// 管理员登录 - 调用 /admin/login
+// export const adminLogin = (data) => {
+//   return request.post('/admin/login', {
+//     account: data.username || '',
+//     password: data.password || ''
+//   })
+//   .then(res => {
+//     console.log('管理员登录响应:', res)
+//     if (res.code !== 200) {
+//       throw new Error(res.msg || '登录失败')
+//     }
+//     return res
+//   })
+//   .catch(error => {
+//     console.error('管理员登录错误:', error)
+//     throw error
+//   })
+// }
+// 管理员登录
 export const adminLogin = (data) => {
-  // 复用用户登录接口，后端会验证是否为管理员
-  return request.post('/user/login', data).then(res => {
-    // 登录成功后验证是否为管理员（前端二次校验）
-    if (res.code === 200) {
-      // 解析Token中的identityType（需在JwtUtil前端实现解析）
-      // const identityType = JwtUtil.getIdentityTypeFromToken(res.data);
-      // if (identityType !== 2) {
-      //   return Promise.reject({ msg: '非管理员账号，无法登录管理后台' });
-      // }
+  console.log('管理员登录请求:', data)
+  
+  return request.post('/admin/login', {
+    account: data.username || '',
+    password: data.password || ''
+  })
+  .then(res => {
+    console.log('管理员登录响应:', res)
+    
+    // 现在res是 {token: '...', user: {...}}
+    if (res.token && res.user) {
+      // 保存到localStorage
+      localStorage.setItem('adminToken', res.token)
+      localStorage.setItem('userInfo', JSON.stringify(res.user))
+      
+      // 设置axios默认header
+      request.defaults.headers.common['Authorization'] = `Bearer ${res.token}`
+      
+      console.log('登录成功，Token:', res.token)
+      console.log('用户信息:', res.user)
+      
+      return res
+    } else {
+      console.error('登录响应缺少必要字段', res)
+      throw new Error('登录响应格式错误')
     }
-    return res;
+  })
+  .catch(error => {
+    console.error('管理员登录过程错误:', error)
+    // 清除可能存在的旧token
+    localStorage.removeItem('adminToken')
+    localStorage.removeItem('userInfo')
+    throw error
   })
 }

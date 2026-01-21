@@ -1,5 +1,6 @@
 package com.campus.delivery.model.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import jakarta.validation.constraints.NotBlank;
 
@@ -16,7 +17,6 @@ public class UserLoginDTO { // 必须加public
     /** 登录账号（手机号/邮箱） */
     @NotBlank(message = "账号不能为空")
     private String account;
-
     /** 登录密码 */
     @NotBlank(message = "密码不能为空")
     private String password;

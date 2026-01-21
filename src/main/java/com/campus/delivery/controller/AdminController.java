@@ -21,7 +21,7 @@ import java.util.Optional;
  * 管理员控制器
  */
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping("/admin")
 public class AdminController {
     @Autowired
     private UserService userService;
@@ -30,26 +30,107 @@ public class AdminController {
      * 管理员登录（前端要调用的/admin/login）
      * 实际复用/user/login逻辑，只是返回管理员专属提示
      */
+//    @PostMapping("/login")
+//    public Result<String> adminLogin(@Validated @RequestBody UserLoginDTO userLoginDTO) {
+//        try {
+//            String token = userService.login(userLoginDTO);
+//            // 验证是否为管理员
+//            Integer identityType = JwtUtil.getIdentityTypeFromToken(token);
+//            if (identityType != 2) {
+//                throw new PermissionDeniedException("非管理员账号，无法登录管理后台");
+//            }
+//            return Result.success(token);
+//        } catch (BusinessException e) {
+//            return Result.error(400, e.getMessage());
+//        } catch (PermissionDeniedException e) {
+//            return Result.forbidden(e.getMessage());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return Result.error(500, "服务器内部错误");
+//        }
+//    }
     @PostMapping("/login")
-    public Result<String> adminLogin(@Validated @RequestBody UserLoginDTO userLoginDTO) {
+    public Result<Map<String, Object>> adminLogin(@RequestBody Map<String, Object> params) {
+        System.out.println("=== 管理员登录开始（调试版）===");
+        System.out.println("前端参数: " + params);
+
+        // 打印所有可能的键
+        System.out.println("参数键列表: " + params.keySet());
+
+        String account = null;
+        String password = null;
+
+        // 检查每个可能的键
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            System.out.println("键: " + entry.getKey() + ", 值: " + entry.getValue());
+        }
+
+        // 尝试获取account
+        account = (String) params.get("account");
+        if (account == null) {
+            account = (String) params.get("loginName");
+        }
+        if (account == null) {
+            account = (String) params.get("username");
+        }
+
+        password = (String) params.get("password");
+
+        System.out.println("提取的账号: " + account);
+        System.out.println("提取的密码: " + password);
+
+        if (account == null || password == null) {
+            System.out.println("账号或密码为空");
+            return Result.error(400, "账号和密码不能为空");
+        }
+
         try {
-            String token = userService.login(userLoginDTO);
-            // 验证是否为管理员
+            System.out.println("创建UserLoginDTO...");
+            UserLoginDTO dto = new UserLoginDTO();
+            dto.setAccount(account);
+            dto.setPassword(password);
+
+            System.out.println("DTO创建完成: account=" + dto.getAccount() + ", password=" + dto.getPassword());
+
+            System.out.println("调用userService.login()...");
+            String token = userService.login(dto);
+            System.out.println("userService返回Token: " + token);
+
+            System.out.println("验证Token身份类型...");
             Integer identityType = JwtUtil.getIdentityTypeFromToken(token);
+            System.out.println("身份类型: " + identityType);
+
             if (identityType != 2) {
-                throw new PermissionDeniedException("非管理员账号，无法登录管理后台");
+                System.out.println("非管理员身份: " + identityType);
+                return Result.forbidden("非管理员账号");
             }
-            return Result.success(token);
-        } catch (BusinessException e) {
-            return Result.error(400, e.getMessage());
-        } catch (PermissionDeniedException e) {
-            return Result.forbidden(e.getMessage());
+
+            System.out.println("从Token解析用户ID...");
+            Long userId = JwtUtil.getUserIdFromToken(token);
+            System.out.println("用户ID: " + userId);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("token", token);
+            data.put("user", Map.of(
+                    "id", userId,
+                    "account", account,
+                    "identityType", identityType
+            ));
+
+            System.out.println("登录成功，返回数据");
+            return Result.success(data);
+
         } catch (Exception e) {
+            System.err.println("========== 管理员登录异常详情 ==========");
+            System.err.println("异常类型: " + e.getClass().getName());
+            System.err.println("异常消息: " + e.getMessage());
+            System.err.println("完整堆栈:");
             e.printStackTrace();
-            return Result.error(500, "服务器内部错误");
+            System.err.println("========== 异常结束 ==========");
+
+            return Result.error(500, "登录失败: " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
     }
-
     /**
      * 用户审核（适配前端PUT请求 + 路径）
      */

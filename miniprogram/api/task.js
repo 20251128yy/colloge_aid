@@ -1,16 +1,22 @@
 // miniprogram/api/task.js
-
-const request = require('../utils/request');
+import request from '../utils/request';
+// const request = require('../utils/request');
 
 /**
  * 获取待接单任务列表
  * @param {number} sortBy - 排序方式（0-积分最高，1-时间最近）
  * @returns {Promise} - 返回Promise对象
  */
-const getPendingTasks = (sortBy = 0) => {
-  return request.get('/task/pending', { sortBy });
+// export const getPendingTasks = (sortBy = 0) => {
+//   return request.get('/task/pending', { sortBy });
+// };
+export const getPendingTasks = () => {
+  return request({
+    url: '/task/list', // 后端接口路径
+    method: 'GET', // 指定GET方法
+    loading: true // 自动显示loading
+  });
 };
-
 /**
  * 创建任务
  * @param {object} data - 任务信息

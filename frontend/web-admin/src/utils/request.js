@@ -21,13 +21,36 @@ request.interceptors.request.use(
 )
 
 // 响应拦截器
+// request.interceptors.response.use(
+//   response => {
+//     const res = response.data
+//     if (res.success) {
+//       return res.data
+//     } else {
+//       return Promise.reject(new Error(res.message || '请求失败'))
+//     }
+//   },
+//   error => {
+//     if (error.response && error.response.status === 401) {
+//       localStorage.removeItem('adminToken')
+//       window.location.href = '/login'
+//     }
+//     return Promise.reject(error)
+//   }
+// )
+// 响应拦截器
 request.interceptors.response.use(
   response => {
     const res = response.data
-    if (res.success) {
-      return res.data
+    console.log('响应数据:', res)
+    
+    // 检查code字段
+    if (res.code === 200 || res.code === undefined) {
+      // 有data字段返回data，没有返回整个res
+      return res.data !== undefined ? res.data : res
     } else {
-      return Promise.reject(new Error(res.message || '请求失败'))
+      // 后端返回错误码
+      return Promise.reject(new Error(res.msg || res.message || '请求失败'))
     }
   },
   error => {
@@ -38,5 +61,4 @@ request.interceptors.response.use(
     return Promise.reject(error)
   }
 )
-
 export default request

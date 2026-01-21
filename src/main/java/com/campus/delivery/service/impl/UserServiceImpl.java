@@ -69,58 +69,63 @@ public class UserServiceImpl implements UserService {
 
     @Override
 //    public String login(UserLoginDTO userLoginDTO) {
-//        Optional<User> userOptional = userRepository.findByPhoneOrEmail(userLoginDTO.getAccount(), userLoginDTO.getAccount());
-//        if (!userOptional.isPresent()) {
-//            throw new BusinessException("用户名或密码错误");
+//        try {
+//            Optional<User> userOptional = userRepository.findByPhoneOrEmail(userLoginDTO.getAccount(), userLoginDTO.getAccount());
+//            if (!userOptional.isPresent()) {
+//                throw new BusinessException("账号不存在");
+//            }
+//            User user = userOptional.get();
+//
+//            // 1. 打印用户信息（确认查询到的用户字段是否正常）
+//            System.out.println("查询到的用户信息：" + user);
+//            System.out.println("identity_type: " + user.getIdentityType());
+//            System.out.println("audit_status: " + user.getAuditStatus());
+//
+//            // 2. 校验密码
+//            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//            if (!encoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
+//                throw new BusinessException("密码错误");
+//            }
+//
+//            // 3. 生成JWT（重点排查）
+//            String token = JwtUtil.generateToken(user.getId(), user.getIdentityType());
+//            System.out.println("生成的JWT Token：" + token);
+//
+//            // 4. 更新最后登录时间
+//            userRepository.save(user);
+//
+//            return token;
+//        } catch (Exception e) {
+//            // 强制打印完整异常堆栈
+//            e.printStackTrace();
+//            throw e; // 继续向上抛，让全局异常处理器返回给前端
 //        }
-//
-//        User user = userOptional.get();
-//
-//        // 检查密码
-//        if (!passwordEncoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
-//            throw new BusinessException("用户名或密码错误");
-//        }
-//
-//        // 检查审核状态
-//        if (user.getAuditStatus() != 1) {
-//            throw new BusinessException("账号未审核通过");
-//        }
-//
-//        // 生成JWT Token
-//        return JwtUtil.generateToken(user.getId(), user.getIdentityType());
 //    }
     public String login(UserLoginDTO userLoginDTO) {
-        try {
-            Optional<User> userOptional = userRepository.findByPhoneOrEmail(userLoginDTO.getAccount(), userLoginDTO.getAccount());
-            if (!userOptional.isPresent()) {
-                throw new BusinessException("账号不存在");
-            }
-            User user = userOptional.get();
+        String account = userLoginDTO.getAccount();
+        System.out.println("登录账号: " + account);
 
-            // 1. 打印用户信息（确认查询到的用户字段是否正常）
-            System.out.println("查询到的用户信息：" + user);
-            System.out.println("identity_type: " + user.getIdentityType());
-            System.out.println("audit_status: " + user.getAuditStatus());
+        // 1. 先按用户名查询
+        Optional<User> userOptional = userRepository.findByName(account);
 
-            // 2. 校验密码
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        // 2. 再按手机/邮箱查询
+        if (!userOptional.isPresent()) {
+            userOptional = userRepository.findByPhoneOrEmail(account, account);
+        }
+
+        if (!userOptional.isPresent()) {
+            throw new BusinessException("账号不存在");
+        }
+
+        User user = userOptional.get();
+        System.out.println("找到用户: " + user.getName());
+
+        // 密码验证
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
             if (!encoder.matches(userLoginDTO.getPassword(), user.getPassword())) {
                 throw new BusinessException("密码错误");
             }
-
-            // 3. 生成JWT（重点排查）
-            String token = JwtUtil.generateToken(user.getId(), user.getIdentityType());
-            System.out.println("生成的JWT Token：" + token);
-
-            // 4. 更新最后登录时间
-            userRepository.save(user);
-
-            return token;
-        } catch (Exception e) {
-            // 强制打印完整异常堆栈
-            e.printStackTrace();
-            throw e; // 继续向上抛，让全局异常处理器返回给前端
-        }
+        return JwtUtil.generateToken(user.getId(), user.getIdentityType());
     }
     // 其他方法不变...
     @Override

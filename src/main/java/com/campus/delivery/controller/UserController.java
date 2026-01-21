@@ -47,6 +47,7 @@ public class UserController {
      */
     @PostMapping("/login")
     public Result<String> login(@Validated @RequestBody UserLoginDTO userLoginDTO) {
+        System.out.println("=== 学生用户登录开始（调试版）===");
         try {
             String token = userService.login(userLoginDTO);
             return Result.success(token);
