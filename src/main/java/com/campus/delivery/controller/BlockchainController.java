@@ -76,7 +76,14 @@ public class BlockchainController {
     private String getTokenFromRequest(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
-            return token.substring(7);
+            String extractedToken = token.substring(7).trim();
+            if (extractedToken == null || extractedToken.isEmpty()) {
+                throw new BusinessException("令牌为空");
+            }
+            if (extractedToken.split("\\.").length != 3) {
+                throw new BusinessException("令牌格式错误");
+            }
+            return extractedToken;
         }
         throw new BusinessException("未提供有效令牌");
     }

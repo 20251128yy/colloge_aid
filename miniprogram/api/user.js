@@ -39,3 +39,44 @@ export const adminLogin = (data) => {
     loading: false
   });
 };
+
+/**
+ * 获取当前用户信息
+ * @param {boolean} loading - 是否显示loading
+ * @returns {Promise} - 返回用户信息
+ */
+export const getCurrentUserInfo = (loading = true) => {
+  return request({
+    url: '/user/info', // 后端接口路径
+    method: 'GET', // 指定GET方法
+    loading: loading // 控制是否显示loading
+  });
+};
+
+/**
+ * 切换用户角色
+ * @param {number} role - 目标角色（0-需求方，1-派送方）
+ * @param {boolean} loading - 是否显示loading
+ * @returns {Promise} - 返回切换结果
+ */
+export const switchRole = (role, loading = true) => {
+  return request({
+    url: '/user/switch-role', // 后端接口路径
+    method: 'POST', // 指定POST方法
+    data: { role }, // 传递角色参数
+    loading: loading // 控制是否显示loading
+  });
+};
+
+/**
+ * 获取用户积分信息
+ * @param {boolean} loading - 是否显示loading
+ * @returns {Promise} - 返回积分信息
+ */
+export const getPointsInfo = (loading = true) => {
+  return request({
+    url: '/user/points', // 后端接口路径
+    method: 'GET', // 指定GET方法
+    loading: loading // 控制是否显示loading
+  });
+};

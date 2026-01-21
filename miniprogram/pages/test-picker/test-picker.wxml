@@ -1,0 +1,18 @@
+<view class="container">
+  <view class="form-item">
+    <text class="label">测试时间选择器</text>
+    <picker 
+      mode="datetime" 
+      start="{{startTime}}" 
+      end="{{endTime}}"
+      bindchange="onTimeChange"
+    >
+      <view class="picker">
+        {{selectedTime || '请选择时间'}}
+      </view>
+    </picker>
+  </view>
+  <view class="result">
+    <text>选择的时间: {{selectedTime}}</text>
+  </view>
+</view>

@@ -96,6 +96,12 @@ public class JwtUtil {
      */
     public static Integer getIdentityTypeFromToken(String token) {
         try {
+            if (token == null || token.isEmpty()) {
+                throw new RuntimeException("解析JWT身份类型失败：Token为空");
+            }
+            if (token.split("\\.").length != 3) {
+                throw new RuntimeException("解析JWT身份类型失败：Token格式错误");
+            }
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(staticSecretKey)
                     .build()

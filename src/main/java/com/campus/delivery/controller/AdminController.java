@@ -140,7 +140,7 @@ public class AdminController {
             @RequestParam Integer auditStatus,
             HttpServletRequest request) {
         try {
-            checkAdminPermission(request);
+            AdminController.checkAdminPermission(request);
             // 复用原有的更新审核状态逻辑
             userService.updateAuditStatus(id, auditStatus);
             return Result.success(true);
@@ -160,7 +160,7 @@ public class AdminController {
             @RequestParam Integer role,
             HttpServletRequest request) {
         try {
-            checkAdminPermission(request);
+            AdminController.checkAdminPermission(request);
             userService.switchRole(id, role);
             return Result.success(true);
         } catch (PermissionDeniedException e) {
@@ -172,7 +172,6 @@ public class AdminController {
 
     /**
      * 更新用户状态（前端需要的接口）
-     * 需在UserService中实现updateUserStatus方法
      */
     @PutMapping("/users/{id}/status")
     public Result<Boolean> updateUserStatus(
@@ -180,9 +179,8 @@ public class AdminController {
             @RequestParam Integer status,
             HttpServletRequest request) {
         try {
-            checkAdminPermission(request);
-            // TODO: 在UserService中实现updateUserStatus方法
-            // userService.updateUserStatus(id, status);
+            AdminController.checkAdminPermission(request);
+            userService.updateUserStatus(id, status);
             return Result.success(true);
         } catch (PermissionDeniedException e) {
             return Result.forbidden(e.getMessage());
@@ -201,7 +199,7 @@ public class AdminController {
             @RequestParam Map<String, Object> params,
             HttpServletRequest request) {
         try {
-            checkAdminPermission(request);
+            AdminController.checkAdminPermission(request);
             // TODO: 在UserService中实现getUserPointsHistory方法
             Map<String, Object> result = new HashMap<>();
             result.put("total", 0);
@@ -218,7 +216,7 @@ public class AdminController {
     @PostMapping("/user/audit")
     public Result<Boolean> auditUser(@RequestParam Long userId, @RequestParam Integer auditStatus, @RequestParam String reason, HttpServletRequest request) {
         try {
-            checkAdminPermission(request);
+            AdminController.checkAdminPermission(request);
             userService.updateAuditStatus(userId, auditStatus);
             return Result.success(true);
         } catch (PermissionDeniedException e) {
@@ -231,7 +229,7 @@ public class AdminController {
     @PostMapping("/task/audit")
     public Result<Boolean> auditTask(@RequestParam Long taskId, @RequestParam Integer auditStatus, @RequestParam String reason, HttpServletRequest request) {
         try {
-            checkAdminPermission(request);
+            AdminController.checkAdminPermission(request);
             return Result.success(true);
         } catch (PermissionDeniedException e) {
             return Result.forbidden(e.getMessage());
@@ -249,7 +247,7 @@ public class AdminController {
             @RequestParam(defaultValue = "10") Integer size,
             HttpServletRequest request) {
         try {
-            checkAdminPermission(request);
+            AdminController.checkAdminPermission(request);
             Map<String, Object> result = new HashMap<>();
             result.put("total", 100);
             result.put("items", null);
@@ -264,7 +262,7 @@ public class AdminController {
     @GetMapping("/users/{userId}")
     public Result<User> getUserDetail(@PathVariable Long userId, HttpServletRequest request) {
         try {
-            checkAdminPermission(request);
+            AdminController.checkAdminPermission(request);
             User user = userService.getUserById(userId).orElse(null);
             return Result.success(user);
         } catch (PermissionDeniedException e) {
@@ -277,7 +275,7 @@ public class AdminController {
     @GetMapping("/statistics")
     public Result<Map<String, Object>> getStatistics(HttpServletRequest request) {
         try {
-            checkAdminPermission(request);
+            AdminController.checkAdminPermission(request);
             Map<String, Object> statistics = new HashMap<>();
             statistics.put("totalUser", 100);
             statistics.put("totalTask", 50);
@@ -296,14 +294,20 @@ public class AdminController {
     /**
      * 权限检查：只有管理员才能访问
      */
-    private void checkAdminPermission(HttpServletRequest request) {
+    public static void checkAdminPermission(HttpServletRequest request) {
         try {
             // 兼容Token为空的情况（避免substring报错）
             String authHeader = request.getHeader("Authorization");
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 throw new PermissionDeniedException("未登录或Token格式错误");
             }
-            String token = authHeader.substring(7);
+            String token = authHeader.substring(7).trim();
+            if (token == null || token.isEmpty()) {
+                throw new PermissionDeniedException("Token为空");
+            }
+            if (token.split("\\.").length != 3) {
+                throw new PermissionDeniedException("Token格式错误");
+            }
             Integer identityType = JwtUtil.getIdentityTypeFromToken(token);
             if (identityType != 2) {
                 throw new PermissionDeniedException("只有管理员才能访问此接口");

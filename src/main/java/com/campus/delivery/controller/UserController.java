@@ -61,7 +61,7 @@ public class UserController {
     /**
      * 角色切换
      */
-    @PostMapping("/switchRole")
+    @PostMapping("/switch-role")
     public Result<UserVO> switchRole(@RequestParam Integer role, HttpServletRequest request) {
         try {
             // 从JWT令牌中获取用户ID
@@ -104,7 +104,7 @@ public class UserController {
      * 获取用户积分
      */
     @GetMapping("/points")
-    public Result<Integer> getPointBalance(HttpServletRequest request) {
+    public Result<Object> getPointBalance(HttpServletRequest request) {
         try {
             // 从JWT令牌中获取用户ID
             String token = request.getHeader("Authorization").substring(7);
@@ -112,7 +112,12 @@ public class UserController {
 
             Optional<User> userOptional = userService.getUserById(userId);
             if (userOptional.isPresent()) {
-                return Result.success(userOptional.get().getPointBalance());
+                User user = userOptional.get();
+                // 返回包含可用积分和冻结积分的对象
+                return Result.success(new Object() {
+                    public int availablePoints = user.getPointBalance();
+                    public int frozenPoints = user.getFrozenPoints();
+                });
             } else {
                 return Result.error(404, "用户不存在");
             }

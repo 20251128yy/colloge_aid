@@ -65,23 +65,35 @@ export const adminLogin = (data) => {
   .then(res => {
     console.log('管理员登录响应:', res)
     
-    // 现在res是 {token: '...', user: {...}}
-    if (res.token && res.user) {
-      // 保存到localStorage
-      localStorage.setItem('adminToken', res.token)
-      localStorage.setItem('userInfo', JSON.stringify(res.user))
-      
-      // 设置axios默认header
-      request.defaults.headers.common['Authorization'] = `Bearer ${res.token}`
-      
-      console.log('登录成功，Token:', res.token)
-      console.log('用户信息:', res.user)
-      
-      return res
+    // 检查响应格式
+    let token, user
+    if (res && res.token && res.user) {
+      // 直接从res中获取
+      token = res.token
+      user = res.user
+    } else if (res && res.data && res.data.token && res.data.user) {
+      // 从res.data中获取
+      token = res.data.token
+      user = res.data.user
     } else {
       console.error('登录响应缺少必要字段', res)
       throw new Error('登录响应格式错误')
     }
+    
+    // 确保token是字符串
+    if (typeof token !== 'string') {
+      console.error('Token格式错误，期望字符串但得到:', token)
+      throw new Error('Token格式错误')
+    }
+    
+    // 保存到localStorage
+    localStorage.setItem('adminToken', token)
+    localStorage.setItem('userInfo', JSON.stringify(user))
+    
+    console.log('登录成功，Token:', token)
+    console.log('用户信息:', user)
+    
+    return { token, user }
   })
   .catch(error => {
     console.error('管理员登录过程错误:', error)

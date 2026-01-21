@@ -46,13 +46,12 @@ const handleLogin = async () => {
       loading.value = true
       adminLogin(loginForm)
         .then(res => {
-          localStorage.setItem('adminToken', res)
           localStorage.setItem('isAdminLoggedIn', true)
           ElMessage.success('登录成功')
           router.push('/')
         })
         .catch(err => {
-          ElMessage.error(err.response?.data?.message || '登录失败')
+          ElMessage.error(err.message || '登录失败')
         })
         .finally(() => {
           loading.value = false

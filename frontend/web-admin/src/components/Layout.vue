@@ -29,6 +29,10 @@
           <el-icon><DataAnalysis /></el-icon>
           <span>数据统计</span>
         </el-menu-item>
+        <el-menu-item index="/settings">
+          <el-icon><Setting /></el-icon>
+          <span>系统设置</span>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -56,7 +60,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Management, User, DocumentChecked, DataAnalysis, SwitchButton } from '@element-plus/icons-vue'
+import { Management, User, DocumentChecked, DataAnalysis, SwitchButton, Setting } from '@element-plus/icons-vue'
 
 const router = useRouter()
 

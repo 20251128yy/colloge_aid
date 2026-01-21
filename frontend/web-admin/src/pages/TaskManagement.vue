@@ -2,25 +2,25 @@
   <div class="task-management">
     <h2>任务管理</h2>
     
-    <!-- 搜索和筛选区域 -->
+    <!-- 搜索和筛选区域（适配后端真实字段） -->
     <el-card shadow="hover" style="margin-bottom: 20px;">
       <el-form :model="searchForm" inline>
         <el-form-item label="任务标题">
           <el-input v-model="searchForm.title" placeholder="请输入任务标题" clearable />
         </el-form-item>
-        <el-form-item label="任务类型">
-          <el-select v-model="searchForm.type" placeholder="全部" clearable>
-            <el-option label="学习任务" value="study" />
-            <el-option label="运动任务" value="exercise" />
-            <el-option label="生活任务" value="life" />
-            <el-option label="其他" value="other" />
+        <el-form-item label="任务状态">
+          <el-select v-model="searchForm.taskStatus" placeholder="全部" clearable>
+            <el-option label="待接单" value="0" />
+            <el-option label="配送中" value="1" />
+            <el-option label="已完成" value="2" />
+            <el-option label="已取消" value="4" />
           </el-select>
         </el-form-item>
-        <el-form-item label="任务状态">
-          <el-select v-model="searchForm.status" placeholder="全部" clearable>
-            <el-option label="待完成" value="pending" />
-            <el-option label="已完成" value="completed" />
-            <el-option label="已取消" value="cancelled" />
+        <el-form-item label="审核状态">
+          <el-select v-model="searchForm.auditStatus" placeholder="全部" clearable>
+            <el-option label="待审核" value="0" />
+            <el-option label="审核通过" value="1" />
+            <el-option label="审核拒绝" value="2" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -34,31 +34,30 @@
       </el-form>
     </el-card>
 
-    <!-- 任务列表 -->
+    <!-- 任务列表（适配后端真实字段和状态） -->
     <el-card shadow="hover">
       <el-table :data="tasks" stripe style="width: 100%">
         <el-table-column type="selection" width="55" />
         <el-table-column prop="id" label="任务ID" width="80" />
         <el-table-column prop="title" label="任务标题" min-width="200" />
-        <el-table-column prop="type" label="任务类型" width="100">
+        <el-table-column prop="fromLocation" label="取件地点" width="120" />
+        <el-table-column prop="toLocation" label="送达地点" width="120" />
+        <el-table-column prop="taskStatus" label="任务状态" width="100">
           <template #default="scope">
-            <el-tag v-if="scope.row.type === 'study'" type="primary">学习任务</el-tag>
-            <el-tag v-else-if="scope.row.type === 'exercise'" type="success">运动任务</el-tag>
-            <el-tag v-else-if="scope.row.type === 'life'" type="warning">生活任务</el-tag>
-            <el-tag v-else type="info">其他</el-tag>
+            <el-tag v-if="scope.row.taskStatus === 0" type="warning">待接单</el-tag>
+            <el-tag v-else-if="scope.row.taskStatus === 1" type="primary">配送中</el-tag>
+            <el-tag v-else-if="scope.row.taskStatus === 2" type="success">已完成</el-tag>
+            <el-tag v-else-if="scope.row.taskStatus === 4" type="danger">已取消</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="creator" label="发布人" />
-        <el-table-column prop="participants" label="参与人数" width="100" />
-        <el-table-column prop="pointReward" label="积分奖励" width="100" />
-        <el-table-column prop="status" label="任务状态" width="100">
+        <el-table-column prop="auditStatus" label="审核状态" width="100">
           <template #default="scope">
-            <el-tag v-if="scope.row.status === 'pending'" type="warning">待完成</el-tag>
-            <el-tag v-else-if="scope.row.status === 'completed'" type="success">已完成</el-tag>
-            <el-tag v-else-if="scope.row.status === 'cancelled'" type="danger">已取消</el-tag>
+            <el-tag v-if="scope.row.auditStatus === 0" type="info">待审核</el-tag>
+            <el-tag v-else-if="scope.row.auditStatus === 1" type="success">审核通过</el-tag>
+            <el-tag v-else-if="scope.row.auditStatus === 2" type="danger">审核拒绝</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="deadline" label="截止时间" width="180" />
+        <el-table-column prop="pointAmount" label="积分奖励" width="100" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
         <el-table-column label="操作" width="150">
           <template #default="scope">
@@ -68,7 +67,7 @@
         </el-table-column>
       </el-table>
 
-      <!-- 分页 -->
+      <!-- 分页（适配后端参数） -->
       <div class="pagination-container">
         <el-pagination
           @size-change="handleSizeChange"
@@ -82,7 +81,7 @@
       </div>
     </el-card>
 
-    <!-- 任务详情对话框 -->
+    <!-- 任务详情对话框（适配后端真实字段） -->
     <el-dialog v-model="dialogVisible" title="任务详情" width="50%">
       <el-form :model="currentTask" label-position="top">
         <el-form-item label="任务ID">
@@ -96,48 +95,45 @@
         </el-form-item>
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="任务类型">
-              <el-tag v-if="currentTask.type === 'study'" type="primary">学习任务</el-tag>
-              <el-tag v-else-if="currentTask.type === 'exercise'" type="success">运动任务</el-tag>
-              <el-tag v-else-if="currentTask.type === 'life'" type="warning">生活任务</el-tag>
-              <el-tag v-else type="info">其他</el-tag>
+            <el-form-item label="取件地点">
+              <el-input v-model="currentTask.fromLocation" disabled />
             </el-form-item>
           </el-col>
+          <el-col :span="12">
+            <el-form-item label="送达地点">
+              <el-input v-model="currentTask.toLocation" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="积分奖励">
-              <el-input v-model="currentTask.pointReward" disabled />
+              <el-input v-model="currentTask.pointAmount" disabled />
             </el-form-item>
           </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-form-item label="发布人">
-              <el-input v-model="currentTask.creator" disabled />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="参与人数">
-              <el-input v-model="currentTask.participants" disabled />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="任务状态">
-              <el-tag v-if="currentTask.status === 'pending'" type="warning">待完成</el-tag>
-              <el-tag v-else-if="currentTask.status === 'completed'" type="success">已完成</el-tag>
-              <el-tag v-else-if="currentTask.status === 'cancelled'" type="danger">已取消</el-tag>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="截止时间">
-              <el-input v-model="currentTask.deadline" disabled />
+              <el-tag v-if="currentTask.taskStatus === 0" type="warning">待接单</el-tag>
+              <el-tag v-else-if="currentTask.taskStatus === 1" type="primary">配送中</el-tag>
+              <el-tag v-else-if="currentTask.taskStatus === 2" type="success">已完成</el-tag>
+              <el-tag v-else-if="currentTask.taskStatus === 4" type="danger">已取消</el-tag>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="创建时间">
-          <el-input v-model="currentTask.createTime" disabled />
-        </el-form-item>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="审核状态">
+              <el-tag v-if="currentTask.auditStatus === 0" type="info">待审核</el-tag>
+              <el-tag v-else-if="currentTask.auditStatus === 1" type="success">审核通过</el-tag>
+              <el-tag v-else-if="currentTask.auditStatus === 2" type="danger">审核拒绝</el-tag>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="创建时间">
+              <el-input v-model="currentTask.createTime" disabled />
+            </el-form-item>
+          </el-col>
+        </el-row>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
@@ -154,11 +150,11 @@ import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { getTasks } from '../api/task'
 
-// 搜索条件
+// 搜索条件（适配后端参数名）
 const searchForm = reactive({
-  title: '',
-  type: '',
-  status: ''
+  title: '',          // 关键词（对应后端keyword）
+  taskStatus: '',     // 任务状态
+  auditStatus: ''     // 审核状态
 })
 
 // 表格数据
@@ -171,51 +167,34 @@ const pageSize = ref(10)
 const dialogVisible = ref(false)
 const currentTask = ref({})
 
-// 模拟任务数据
-const mockTasks = []
-const types = ['study', 'exercise', 'life', 'other']
-const typeLabels = ['学习任务', '运动任务', '生活任务', '其他']
-const statuses = ['pending', 'completed', 'cancelled']
+// 核心：加载任务列表（适配后端返回格式）
+const loadTasks = async () => {
+  try {
+    const params = {
+      pageNum: currentPage.value,    
+      pageSize: pageSize.value,      
+      keyword: searchForm.title,     
+      taskStatus: searchForm.taskStatus || undefined,  
+      auditStatus: searchForm.auditStatus || undefined  
+    }
 
-for (let i = 1; i <= 30; i++) {
-  const typeIndex = Math.floor(Math.random() * types.length)
-  mockTasks.push({
-    id: i,
-    title: `任务${i} - ${typeLabels[typeIndex]}`,
-    description: `这是${typeLabels[typeIndex]}的详细描述，包含任务要求、完成标准等信息。`,
-    type: types[typeIndex],
-    creator: `用户${Math.floor(Math.random() * 100 + 1)}`,
-    participants: Math.floor(Math.random() * 50),
-    pointReward: Math.floor(Math.random() * 100 + 50),
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    deadline: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleString('zh-CN'),
-    createTime: new Date(Date.now() - Math.random() * 15 * 24 * 60 * 60 * 1000).toLocaleString('zh-CN')
-  })
-}
+    // 调用API（此时response已经是后端的res.data，即{list:[...], total:5}）
+    const response = await getTasks(params)
+    console.log("后端返回的最终数据：", response) // 此时打印的应该是 {list:[5条数据], total:5}
+    
+    // 适配响应拦截器的返回格式（直接取response.list，而非response.data.list）
+    tasks.value = response.list || []  // 核心修改：去掉.data层级
+    total.value = response.total || 0  // 核心修改：去掉.data层级
 
-// 加载任务列表
-const loadTasks = () => {
-  // 模拟API请求
-  tasks.value = mockTasks
-    .filter(task => {
-      // 按标题过滤
-      const title = searchForm.title.toLowerCase()
-      if (title && !task.title.toLowerCase().includes(title)) {
-        return false
-      }
-      // 按类型过滤
-      if (searchForm.type && task.type !== searchForm.type) {
-        return false
-      }
-      // 按状态过滤
-      if (searchForm.status && task.status !== searchForm.status) {
-        return false
-      }
-      return true
-    })
-    .slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value)
-  
-  total.value = mockTasks.length
+    // 验证：打印解析后的数据
+    console.log("解析后的任务列表：", tasks.value)
+    console.log("解析后的总条数：", total.value)
+  } catch (error) {
+    console.error('加载任务列表失败详情：', error)
+    ElMessage.error(`加载任务列表失败：${error.message || '未知错误'}`)
+    tasks.value = []
+    total.value = 0
+  }
 }
 
 // 搜索
@@ -227,8 +206,8 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   searchForm.title = ''
-  searchForm.type = ''
-  searchForm.status = ''
+  searchForm.taskStatus = ''
+  searchForm.auditStatus = ''
   currentPage.value = 1
   loadTasks()
 }
@@ -245,9 +224,17 @@ const handleView = (task) => {
 }
 
 // 取消任务
-const handleCancel = (task) => {
-  ElMessage.success(`任务${task.title}已取消`)
-  task.status = 'cancelled'
+const handleCancel = async (task) => {
+  try {
+    // 调用取消任务API（后续可补充）
+    // await cancelTask(task.id)
+    ElMessage.success(`任务${task.title}已取消`)
+    // 本地更新状态（后端是4=已取消）
+    task.taskStatus = 4
+  } catch (error) {
+    console.error('取消任务失败:', error)
+    ElMessage.error('取消任务失败，请重试')
+  }
 }
 
 // 分页处理

@@ -28,20 +28,20 @@ Page({
     try {
       wx.showLoading({ title: '加载中...' });
 
-      // 调用获取当前用户信息API
-      const res = await getCurrentUserInfo();
+      // 调用获取当前用户信息API（禁用自动loading）
+      const res = await getCurrentUserInfo(false);
 
-      if (res.success) {
+      if (res.code === 200) {
         this.setData({
           userInfo: res.data,
           currentRole: res.data.currentRole || 0
         });
       } else {
-        wx.showToast({ title: res.message, icon: 'none' });
+        wx.showToast({ title: res.msg, icon: 'none' });
       }
     } catch (error) {
       console.error('加载用户信息失败:', error);
-      wx.showToast({ title: '加载失败，请重试', icon: 'none' });
+      wx.showToast({ title: error.msg || '加载失败，请重试', icon: 'none' });
     } finally {
       wx.hideLoading();
     }
@@ -50,15 +50,15 @@ Page({
   // 加载积分信息
   async loadPointsInfo() {
     try {
-      // 调用获取积分信息API
-      const res = await getPointsInfo();
+      // 调用获取积分信息API（禁用自动loading）
+      const res = await getPointsInfo(false);
 
-      if (res.success) {
+      if (res.code === 200) {
         this.setData({
           pointsInfo: res.data
         });
       } else {
-        console.log('加载积分信息失败:', res.message);
+        console.log('加载积分信息失败:', res.msg);
       }
     } catch (error) {
       console.error('加载积分信息失败:', error);
@@ -78,10 +78,10 @@ Page({
           try {
             wx.showLoading({ title: '切换中...' });
 
-            // 调用切换角色API
-            const result = await switchRole(newRole);
+            // 调用切换角色API（禁用自动loading）
+            const result = await switchRole(newRole, false);
 
-            if (result.success) {
+            if (result.code === 200) {
               wx.showToast({ title: '角色切换成功' });
               this.setData({
                 currentRole: newRole
@@ -89,11 +89,11 @@ Page({
               // 重新加载用户信息
               this.loadUserInfo();
             } else {
-              wx.showToast({ title: result.message, icon: 'none' });
+              wx.showToast({ title: result.msg, icon: 'none' });
             }
           } catch (error) {
             console.error('角色切换失败:', error);
-            wx.showToast({ title: '切换失败，请重试', icon: 'none' });
+            wx.showToast({ title: error.msg || '切换失败，请重试', icon: 'none' });
           } finally {
             wx.hideLoading();
           }

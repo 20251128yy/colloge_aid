@@ -196,4 +196,12 @@ public class UserServiceImpl implements UserService {
     public boolean changePassword(Long userId, String oldPassword, String newPassword) {
         return false;
     }
+
+    @Override
+    @Transactional
+    public User updateUserStatus(Long userId, Integer status) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException("用户不存在"));
+        user.setStatus(status);
+        return userRepository.save(user);
+    }
 }

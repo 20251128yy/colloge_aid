@@ -5,6 +5,7 @@ import Dashboard from '../pages/Dashboard.vue'
 import UserManagement from '../pages/UserManagement.vue'
 import TaskManagement from '../pages/TaskManagement.vue'
 import Statistics from '../pages/Statistics.vue'
+import SystemSettings from '../pages/SystemSettings.vue'
 
 const routes = [
   {
@@ -38,6 +39,11 @@ const routes = [
         path: '/statistics',
         name: 'Statistics',
         component: Statistics
+      },
+      {
+        path: '/settings',
+        name: 'SystemSettings',
+        component: SystemSettings
       }
     ]
   }

@@ -105,7 +105,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { User, DocumentChecked, CircleCheck, Money } from '@element-plus/icons-vue'
-import { getUsers } from '../api/user'
+import { getUsers, updateUserAuditStatus } from '../api/user'
 import { getPlatformStatistics } from '../api/statistics'
 
 // 统计数据
@@ -116,33 +116,46 @@ const totalPoints = ref(0)
 const pendingUsers = ref([])
 
 // 获取统计数据
-const fetchStatistics = () => {
-  // 模拟数据，实际项目中应调用API
-  totalUsers.value = 128
-  pendingTasks.value = 23
-  completedTasks.value = 345
-  totalPoints.value = 12345
-  
-  // 模拟待审核用户数据
-  pendingUsers.value = [
-    { id: 1, name: '张三', phone: '13800138001', studentId: '20230101', createTime: '2026-01-20 10:00:00', auditStatus: 0 },
-    { id: 2, name: '李四', phone: '13800138002', studentId: '20230102', createTime: '2026-01-20 09:30:00', auditStatus: 0 },
-    { id: 3, name: '王五', phone: '13800138003', studentId: '20230103', createTime: '2026-01-20 09:15:00', auditStatus: 0 }
-  ]
+const fetchStatistics = async () => {
+  try {
+    // 获取平台统计数据
+    const statsResponse = await getPlatformStatistics()
+    totalUsers.value = statsResponse.totalUsers || 0
+    pendingTasks.value = statsResponse.pendingTasks || 0
+    completedTasks.value = statsResponse.completedTasks || 0
+    totalPoints.value = statsResponse.totalPoints || 0
+    
+    // 获取待审核用户数据
+    const usersResponse = await getUsers({ auditStatus: 0, page: 1, pageSize: 10 })
+    pendingUsers.value = usersResponse.records || []
+  } catch (error) {
+    console.error('获取统计数据失败:', error)
+    ElMessage.error('获取统计数据失败，请重试')
+  }
 }
 
 // 审核通过
-const handleApprove = (user) => {
-  ElMessage.success(`用户 ${user.name} 审核通过`)
-  // 实际项目中调用API
-  pendingUsers.value = pendingUsers.value.filter(u => u.id !== user.id)
+const handleApprove = async (user) => {
+  try {
+    await updateUserAuditStatus(user.id, 1)
+    ElMessage.success(`用户 ${user.name} 审核通过`)
+    pendingUsers.value = pendingUsers.value.filter(u => u.id !== user.id)
+  } catch (error) {
+    console.error('审核用户失败:', error)
+    ElMessage.error('审核用户失败，请重试')
+  }
 }
 
 // 审核拒绝
-const handleReject = (user) => {
-  ElMessage.success(`用户 ${user.name} 审核拒绝`)
-  // 实际项目中调用API
-  pendingUsers.value = pendingUsers.value.filter(u => u.id !== user.id)
+const handleReject = async (user) => {
+  try {
+    await updateUserAuditStatus(user.id, 2)
+    ElMessage.success(`用户 ${user.name} 审核拒绝`)
+    pendingUsers.value = pendingUsers.value.filter(u => u.id !== user.id)
+  } catch (error) {
+    console.error('审核用户失败:', error)
+    ElMessage.error('审核用户失败，请重试')
+  }
 }
 
 onMounted(() => {

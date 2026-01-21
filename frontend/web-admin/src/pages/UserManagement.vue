@@ -21,6 +21,12 @@
             <el-option label="审核拒绝" value="2" />
           </el-select>
         </el-form-item>
+        <el-form-item label="用户角色">
+          <el-select v-model="searchForm.role" placeholder="全部" clearable>
+            <el-option label="需求方" value="1" />
+            <el-option label="派送方" value="2" />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleSearch">
             <el-icon><Search /></el-icon>
@@ -41,6 +47,12 @@
         <el-table-column prop="email" label="邮箱" />
         <el-table-column prop="studentId" label="学号" />
         <el-table-column prop="pointBalance" label="积分余额" width="100" />
+        <el-table-column prop="currentRole" label="用户角色" width="100">
+          <template #default="scope">
+            <el-tag v-if="scope.row.currentRole === 1" type="info">需求方</el-tag>
+            <el-tag v-else-if="scope.row.currentRole === 2" type="primary">派送方</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="auditStatus" label="审核状态" width="100">
           <template #default="scope">
             <el-tag v-if="scope.row.auditStatus === 0" type="warning">待审核</el-tag>
@@ -55,11 +67,13 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="注册时间" width="180" />
-        <el-table-column label="操作" width="200">
+        <el-table-column label="操作" width="250">
           <template #default="scope">
             <el-button type="primary" size="small" @click="handleView(scope.row)">查看</el-button>
             <el-button type="warning" size="small" @click="handleUpdateStatus(scope.row)">状态</el-button>
-            <el-button type="danger" size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="info" size="small" @click="handleSwitchRole(scope.row)">
+              {{ scope.row.currentRole === 1 ? '切换为派送方' : '切换为需求方' }}
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -149,13 +163,14 @@
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
-import { getUsers } from '../api/user'
+import { getUsers, updateUserStatus, updateUserRole } from '../api/user'
 
 // 搜索条件
 const searchForm = reactive({
   keyword: '',
   status: '',
-  auditStatus: ''
+  auditStatus: '',
+  role: ''
 })
 
 // 表格数据
@@ -168,46 +183,27 @@ const pageSize = ref(10)
 const dialogVisible = ref(false)
 const currentUser = ref({})
 
-// 模拟用户数据
-const mockUsers = []
-for (let i = 1; i <= 50; i++) {
-  mockUsers.push({
-    id: i,
-    name: `用户${i}`,
-    phone: `138001380${i.toString().padStart(2, '0')}`,
-    email: `user${i}@example.com`,
-    studentId: `2023${i.toString().padStart(4, '0')}`,
-    pointBalance: Math.floor(Math.random() * 1000),
-    auditStatus: Math.floor(Math.random() * 3),
-    status: Math.random() > 0.2 ? 1 : 0,
-    createTime: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleString('zh-CN')
-  })
-}
-
 // 加载用户列表
-const loadUsers = () => {
-  // 模拟API请求
-  users.value = mockUsers
-    .filter(user => {
-      // 按关键词过滤
-      const keyword = searchForm.keyword.toLowerCase()
-      if (keyword && !user.name.toLowerCase().includes(keyword) && 
-          !user.phone.includes(keyword) && !user.studentId.includes(keyword)) {
-        return false
-      }
-      // 按状态过滤
-      if (searchForm.status !== '' && user.status !== parseInt(searchForm.status)) {
-        return false
-      }
-      // 按审核状态过滤
-      if (searchForm.auditStatus !== '' && user.auditStatus !== parseInt(searchForm.auditStatus)) {
-        return false
-      }
-      return true
-    })
-    .slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value)
-  
-  total.value = mockUsers.length
+const loadUsers = async () => {
+  try {
+    // 构建请求参数
+    const params = {
+      page: currentPage.value,
+      pageSize: pageSize.value,
+      keyword: searchForm.keyword,
+      status: searchForm.status || undefined,
+      auditStatus: searchForm.auditStatus || undefined,
+      role: searchForm.role || undefined
+    }
+
+    // 调用真实API
+    const response = await getUsers(params)
+    users.value = response.records || []
+    total.value = response.total || 0
+  } catch (error) {
+    console.error('加载用户列表失败:', error)
+    ElMessage.error('加载用户列表失败，请重试')
+  }
 }
 
 // 搜索
@@ -221,6 +217,7 @@ const handleReset = () => {
   searchForm.keyword = ''
   searchForm.status = ''
   searchForm.auditStatus = ''
+  searchForm.role = ''
   currentPage.value = 1
   loadUsers()
 }
@@ -232,17 +229,43 @@ const handleView = (user) => {
 }
 
 // 更新用户状态
-const handleUpdateStatus = (user) => {
+const handleUpdateStatus = async (user) => {
   const newStatus = user.status === 1 ? 0 : 1
-  ElMessage.success(`用户${user.name}状态已更新为${newStatus === 1 ? '启用' : '禁用'}`)
-  user.status = newStatus
+  try {
+    await updateUserStatus(user.id, newStatus)
+    ElMessage.success(`用户${user.name}状态已更新为${newStatus === 1 ? '启用' : '禁用'}`)
+    user.status = newStatus
+  } catch (error) {
+    console.error('更新用户状态失败:', error)
+    ElMessage.error('更新用户状态失败，请重试')
+  }
 }
 
 // 删除用户
-const handleDelete = (user) => {
-  ElMessage.success(`用户${user.name}已删除`)
-  users.value = users.value.filter(u => u.id !== user.id)
-  total.value--
+const handleDelete = async (user) => {
+  try {
+    // 这里需要添加删除用户的API调用
+    // await deleteUser(user.id)
+    ElMessage.success(`用户${user.name}已删除`)
+    // 重新加载用户列表
+    loadUsers()
+  } catch (error) {
+    console.error('删除用户失败:', error)
+    ElMessage.error('删除用户失败，请重试')
+  }
+}
+
+// 切换用户角色
+const handleSwitchRole = async (user) => {
+  const newRole = user.currentRole === 1 ? 2 : 1
+  try {
+    await updateUserRole(user.id, newRole)
+    ElMessage.success(`用户${user.name}已切换为${newRole === 1 ? '需求方' : '派送方'}`)
+    user.currentRole = newRole
+  } catch (error) {
+    console.error('切换用户角色失败:', error)
+    ElMessage.error('切换用户角色失败，请重试')
+  }
 }
 
 // 分页处理

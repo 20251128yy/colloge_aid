@@ -5,8 +5,8 @@
  */
 export default function request(options) {
   // 基础路径：后端实际运行端口是8080，不是3001！
-  const baseUrl = 'http://localhost:8080/api';
-  
+ const baseUrl = 'http://localhost:8080/api';
+  // const baseUrl = 'http://192.168.1.105:8080/api';
   // 显示loading（如果需要）
   if (options.loading !== false) {
     wx.showLoading({ title: '加载中...', mask: true });

@@ -10,11 +10,12 @@ import request from '../utils/request';
 // export const getPendingTasks = (sortBy = 0) => {
 //   return request.get('/task/pending', { sortBy });
 // };
-export const getPendingTasks = () => {
+export const getPendingTasks = (sortBy = 0, loading = true) => {
   return request({
     url: '/task/list', // 后端接口路径
     method: 'GET', // 指定GET方法
-    loading: true // 自动显示loading
+    data: { sortBy }, // 传递排序参数
+    loading: loading // 控制是否显示loading
   });
 };
 /**
@@ -22,8 +23,13 @@ export const getPendingTasks = () => {
  * @param {object} data - 任务信息
  * @returns {Promise} - 返回Promise对象
  */
-const createTask = (data) => {
-  return request.post('/task/create', data);
+export const createTask = (data) => {
+  return request({
+    url: '/task/create', // 后端接口路径
+    method: 'POST', // 指定POST方法
+    data: data, // 传递任务数据
+    loading: true // 自动显示loading
+  });
 };
 
 /**

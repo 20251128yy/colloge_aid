@@ -1,5 +1,4 @@
 package com.campus.delivery.service.impl;
-
 import com.campus.delivery.entity.Task;
 import com.campus.delivery.model.dto.TaskCreateDTO;
 import com.campus.delivery.repository.TaskRepository;
@@ -10,11 +9,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
+import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -31,7 +38,39 @@ public class TaskServiceImpl implements TaskService {
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String PENDING_TASKS_KEY = "pending_tasks:";
+    @Override
+    public Page<Task> getAllTasks(Integer auditStatus, Integer taskStatus, String keyword, Pageable pageable) {
+        // 使用 JPA Specification 构建动态查询条件
+        Specification<Task> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
 
+            // 1. 按审核状态筛选
+            if (auditStatus != null) {
+                predicates.add(cb.equal(root.get("auditStatus"), auditStatus));
+            }
+
+            // 2. 按任务状态筛选
+            if (taskStatus != null) {
+                predicates.add(cb.equal(root.get("taskStatus"), taskStatus));
+            }
+
+            // 3. 关键词模糊搜索（标题/描述/取件地点）
+            if (StringUtils.hasText(keyword)) {
+                String likePattern = "%" + keyword + "%";
+                Predicate titleLike = cb.like(root.get("title"), likePattern);
+                Predicate descLike = cb.like(root.get("description"), likePattern);
+                Predicate locationLike = cb.like(root.get("fromLocation"), likePattern);
+                predicates.add(cb.or(titleLike, descLike, locationLike));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+        Page<Task> taskPage = taskRepository.findAll(spec, pageable);
+        System.out.println("查询到的任务总数：" + taskPage.getTotalElements());
+        System.out.println("查询到的任务列表：" + taskPage.getContent());
+        // 执行分页查询
+        return taskRepository.findAll(spec, pageable);
+    }
     @Override
     @Transactional
     public Task createTask(TaskCreateDTO taskCreateDTO, Long userId) {

@@ -33,10 +33,10 @@ Page({
     try {
       wx.showLoading({ title: '加载中...' });
 
-      // 调用获取待接单任务API
-      const res = await getPendingTasks(sortBy);
+      // 调用获取待接单任务API（禁用request.js中的loading）
+      const res = await getPendingTasks(sortBy, false);
 
-      if (res.success) {
+      if (res.code === 200) {
         const newTasks = res.data || [];
         
         this.setData({
@@ -45,11 +45,11 @@ Page({
           page: page + 1
         });
       } else {
-        wx.showToast({ title: res.message, icon: 'none' });
+        wx.showToast({ title: res.msg, icon: 'none' });
       }
     } catch (error) {
       console.error('加载任务失败:', error);
-      wx.showToast({ title: '加载失败，请重试', icon: 'none' });
+      wx.showToast({ title: error.msg || '加载失败，请重试', icon: 'none' });
     } finally {
       wx.hideLoading();
     }
@@ -98,7 +98,7 @@ Page({
 
   // 创建任务
   onCreateTask() {
-    // TODO: 跳转到创建任务页面
-    wx.showToast({ title: '创建任务功能开发中', icon: 'none' });
+    // 跳转到创建任务页面
+    wx.navigateTo({ url: '/pages/create-task/create-task' });
   }
 });

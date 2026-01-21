@@ -3,6 +3,8 @@ package com.campus.delivery.service;
 import com.campus.delivery.entity.Task;
 import com.campus.delivery.model.dto.TaskCreateDTO;
 import com.campus.delivery.model.vo.TaskVO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -56,4 +58,7 @@ public interface TaskService {
      * 处理超时未接单任务
      */
     void processTimeoutTasks();
+
+    // TaskService.java
+    Page<Task> getAllTasks(Integer auditStatus, Integer taskStatus, String keyword, Pageable pageable);
 }

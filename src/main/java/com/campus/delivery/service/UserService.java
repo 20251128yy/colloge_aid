@@ -56,4 +56,9 @@ public interface UserService {
     User updateUser(User user);
 
     boolean changePassword(Long userId, String oldPassword, String newPassword);
+
+    /**
+     * 更新用户状态
+     */
+    User updateUserStatus(Long userId, Integer status);
 }

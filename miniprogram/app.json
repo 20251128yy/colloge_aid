@@ -3,7 +3,9 @@
     "pages/login/login",
     "pages/index/index",
     "pages/task-detail/task-detail",
-    "pages/profile/profile"
+    "pages/profile/profile",
+    "pages/create-task/create-task",
+    "pages/test-picker/test-picker"
   ],
   "window": {
     "backgroundTextStyle": "light",
