@@ -5,6 +5,7 @@ import com.campus.delivery.model.dto.UserLoginDTO;
 import com.campus.delivery.model.dto.UserRegisterDTO;
 import com.campus.delivery.model.vo.UserVO;
 
+import java.util.Map;
 import java.util.Optional;
 
 public interface UserService {
@@ -61,4 +62,7 @@ public interface UserService {
      * 更新用户状态
      */
     User updateUserStatus(Long userId, Integer status);
+
+    Map<String, Object> getUserListByCondition(String keyword, Integer auditStatus, Integer role, Integer pageNum, Integer pageSize);
+
 }

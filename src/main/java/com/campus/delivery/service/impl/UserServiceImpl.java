@@ -7,15 +7,22 @@ import com.campus.delivery.model.dto.UserRegisterDTO;
 import com.campus.delivery.repository.UserRepository;
 import com.campus.delivery.service.UserService;
 import com.campus.delivery.util.JwtUtil;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Root;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Predicate;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -23,7 +30,55 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    // 实现带条件的分页查询
+    @Override
+    public Map<String, Object> getUserListByCondition(String keyword, Integer auditStatus, Integer role, Integer pageNum, Integer pageSize) {
+        // 1. 构建查询条件（显式指定JPA的Predicate类型，避免和java.util.function.Predicate混淆）
+        Specification<User> spec = new Specification<User>() {
+            @Override
+            public jakarta.persistence.criteria.Predicate toPredicate(
+                    Root<User> root,
+                    CriteriaQuery<?> query,
+                    CriteriaBuilder cb) {
 
+                // 显式声明JPA的Predicate列表（核心修复）
+                List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+
+                // 关键词模糊查询（姓名/手机号/学号）
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                    jakarta.persistence.criteria.Predicate nameLike = cb.like(root.get("name"), "%" + keyword.trim() + "%");
+                    jakarta.persistence.criteria.Predicate phoneLike = cb.like(root.get("phone"), "%" + keyword.trim() + "%");
+                    jakarta.persistence.criteria.Predicate studentIdLike = cb.like(root.get("studentId"), "%" + keyword.trim() + "%");
+                    predicates.add(cb.or(nameLike, phoneLike, studentIdLike)); // 无需强制转换
+                }
+
+                // 审核状态筛选
+                if (auditStatus != null) {
+                    predicates.add(cb.equal(root.get("auditStatus"), auditStatus));
+                }
+
+                // 角色筛选
+                if (role != null) {
+                    predicates.add(cb.equal(root.get("currentRole"), role));
+                }
+
+                // 组合所有条件（转换为JPA的Predicate数组，无类型冲突）
+                return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+            }
+        };
+
+        // 2. 分页查询（JPA页码从0开始，前端传的是1开始）
+        int jpaPageNum = pageNum - 1;
+        Pageable pageable = PageRequest.of(jpaPageNum, pageSize);
+        Page<User> userPage = userRepository.findAll(spec, pageable);
+
+        // 3. 封装结果
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", userPage.getTotalElements()); // 总条数
+        result.put("list", userPage.getContent());        // 用户列表数据
+
+        return result;
+    }
     @Override
     @Transactional
     public User register(UserRegisterDTO userRegisterDTO) {

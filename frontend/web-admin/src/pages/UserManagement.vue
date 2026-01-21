@@ -2,7 +2,7 @@
   <div class="user-management">
     <h2>用户管理</h2>
     
-    <!-- 搜索和筛选区域 -->
+    <!-- 搜索和筛选区域（保持不变） -->
     <el-card shadow="hover" style="margin-bottom: 20px;">
       <el-form :model="searchForm" inline>
         <el-form-item label="搜索">
@@ -37,7 +37,7 @@
       </el-form>
     </el-card>
 
-    <!-- 用户列表 -->
+    <!-- 用户列表（保持不变） -->
     <el-card shadow="hover">
       <el-table :data="users" stripe style="width: 100%">
         <el-table-column type="selection" width="55" />
@@ -78,7 +78,7 @@
         </el-table-column>
       </el-table>
 
-      <!-- 分页 -->
+      <!-- 分页（保持不变） -->
       <div class="pagination-container">
         <el-pagination
           @size-change="handleSizeChange"
@@ -92,7 +92,7 @@
       </div>
     </el-card>
 
-    <!-- 用户详情对话框 -->
+    <!-- 用户详情对话框（保持不变） -->
     <el-dialog v-model="dialogVisible" title="用户详情" width="50%">
       <el-form :model="currentUser" label-position="top">
         <el-row :gutter="20">
@@ -183,26 +183,35 @@ const pageSize = ref(10)
 const dialogVisible = ref(false)
 const currentUser = ref({})
 
-// 加载用户列表
+// 加载用户列表（核心修复：适配request.js和后端参数）
 const loadUsers = async () => {
   try {
-    // 构建请求参数
+    // 修复1：请求参数名改为pageNum（和后端接口一致）
     const params = {
-      page: currentPage.value,
-      pageSize: pageSize.value,
+      pageNum: currentPage.value,    // 替换page为pageNum
+      pageSize: pageSize.value,      
       keyword: searchForm.keyword,
       status: searchForm.status || undefined,
       auditStatus: searchForm.auditStatus || undefined,
       role: searchForm.role || undefined
     }
 
-    // 调用真实API
+    // 调用API（此时response是request.js返回的res.data，即{records/list:[...], total:xx}）
     const response = await getUsers(params)
-    users.value = response.records || []
+    console.log("用户列表后端返回数据：", response) // 调试用
+    
+    // 修复2：兼容后端返回的records或list字段（和任务列表一致）
+    users.value = response.records || response.list || []
     total.value = response.total || 0
+
+    // 验证：打印解析后的数据
+    console.log("解析后的用户列表：", users.value)
+    console.log("解析后的总条数：", total.value)
   } catch (error) {
-    console.error('加载用户列表失败:', error)
-    ElMessage.error('加载用户列表失败，请重试')
+    console.error('加载用户列表失败详情:', error)
+    ElMessage.error(`加载用户列表失败：${error.message || '未知错误'}`)
+    users.value = []
+    total.value = 0
   }
 }
 
@@ -241,13 +250,11 @@ const handleUpdateStatus = async (user) => {
   }
 }
 
-// 删除用户
+// 删除用户（保留）
 const handleDelete = async (user) => {
   try {
-    // 这里需要添加删除用户的API调用
     // await deleteUser(user.id)
     ElMessage.success(`用户${user.name}已删除`)
-    // 重新加载用户列表
     loadUsers()
   } catch (error) {
     console.error('删除用户失败:', error)

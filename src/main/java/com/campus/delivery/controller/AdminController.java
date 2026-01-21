@@ -237,28 +237,51 @@ public class AdminController {
             return Result.badRequest(e.getMessage());
         }
     }
-
     @GetMapping("/users")
     public Result<Map<String, Object>> getUserList(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer auditStatus,
             @RequestParam(required = false) Integer role,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
+            // 适配前端传的pageNum/pageSize，同时兼容旧的page/size
+            @RequestParam(required = false, defaultValue = "1") Integer pageNum,
+            @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false, defaultValue = "1") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer size,
             HttpServletRequest request) {
         try {
             AdminController.checkAdminPermission(request);
+
+            // 优先级：pageNum/pageSize > page/size（适配前端参数）
+            Integer finalPage = pageNum != null ? pageNum : page;
+            Integer finalSize = pageSize != null ? pageSize : size;
+
+            // 1. 调用UserService查询真实用户列表（分页）
+            //    需在UserService中实现带条件的分页查询方法
+            //    返回格式：Map<String, Object> = {total: 总条数, list: 用户列表}
+            Map<String, Object> userPage = userService.getUserListByCondition(
+                    keyword, auditStatus, role, finalPage, finalSize);
+
+            // 2. 构建返回数据（适配前端解析的list/total字段）
             Map<String, Object> result = new HashMap<>();
-            result.put("total", 100);
-            result.put("items", null);
+            result.put("total", userPage.get("total")); // 总条数
+            result.put("list", userPage.get("list"));   // 用户列表（替换items为list）
+            // 兼容前端的records字段（双重保障）
+            result.put("records", userPage.get("list"));
+
+            System.out.println("=== 管理员查询用户列表 ===");
+            System.out.println("查询条件：keyword=" + keyword + ", auditStatus=" + auditStatus + ", role=" + role);
+            System.out.println("分页参数：pageNum=" + finalPage + ", pageSize=" + finalSize);
+            System.out.println("返回数据：total=" + userPage.get("total") + ", list条数=" + ((List<?>)userPage.get("list")).size());
+
             return Result.success(result);
         } catch (PermissionDeniedException e) {
             return Result.forbidden(e.getMessage());
         } catch (Exception e) {
-            return Result.badRequest(e.getMessage());
+            System.err.println("查询用户列表异常：");
+            e.printStackTrace();
+            return Result.error(500, "查询用户列表失败：" + e.getMessage());
         }
     }
-
     @GetMapping("/users/{userId}")
     public Result<User> getUserDetail(@PathVariable Long userId, HttpServletRequest request) {
         try {
